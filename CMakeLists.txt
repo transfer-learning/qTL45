@@ -13,16 +13,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
-include_directories({CMAKE_BINARY_DIR}/tl45_emu_autogen/include)
+find_package(fmt)
+include_directories(${CMAKE_BINARY_DIR}/tl45_emu_autogen/include)
 
 include_directories(emulator)
+include_directories(emulator/tl45)
 add_executable(tl45_emu
         main.cpp
         emulator/tl45_emu_core.cpp
+        emulator/tl45/TL45EmulatorState.cpp
         TL45RegisterListModel.cpp
         tl45emu.cpp
         tl45emu.h
         tl45emu.ui
         )
 
-target_link_libraries(tl45_emu PRIVATE Qt5::Widgets)
+target_link_libraries(tl45_emu PRIVATE Qt5::Widgets fmt::fmt)
