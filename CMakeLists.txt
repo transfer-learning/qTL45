@@ -15,8 +15,10 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 include_directories({CMAKE_BINARY_DIR}/tl45_emu_autogen/include)
 
+include_directories(emulator)
 add_executable(tl45_emu
         main.cpp
+        emulator/tl45_emu_core.cpp
         TL45RegisterListModel.cpp
         tl45emu.cpp
         tl45emu.h

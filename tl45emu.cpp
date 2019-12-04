@@ -5,8 +5,9 @@ TL45emu::TL45emu(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::TL45emu)
 {
+    this->machine_state = new tl45_state;
     ui->setupUi(this);
-    this->registerListModel = new TL45RegisterListModel;
+    this->registerListModel = new TL45RegisterListModel(this->machine_state);
     this->ui->register_view->setModel(this->registerListModel);
 }
 

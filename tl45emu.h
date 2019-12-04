@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "TL45RegisterListModel.h"
+#include "tl45_emu_core.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class TL45emu; }
@@ -19,5 +20,6 @@ public:
 private:
     Ui::TL45emu *ui;
     TL45RegisterListModel *registerListModel;
+    tl45_state* machine_state;
 };
 #endif // TL45EMU_H

@@ -15,3 +15,7 @@ QVariant TL45RegisterListModel::data(const QModelIndex &index, int role) const {
   }
   return QVariant();
 }
+
+TL45RegisterListModel::TL45RegisterListModel(tl45_state *machine_state) {
+  this->machine_state = machine_state;
+}
