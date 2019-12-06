@@ -88,52 +88,52 @@ void tick(tl45_state *state) {
     case 0x0:
       break; // NOP
     case 0x1: { // ADD
-      uint64_t val2 = state->registers[instr.SR2 - 1];
+      uint64_t val2 = state->read_reg(instr.SR2);
       if (instr.RI) { // IMM Mode
         val2 = instr.decode_imm();
       }
 
-      uint64_t val1 = state->registers[instr.SR1 - 1];
+      uint64_t val1 = state->read_reg(instr.SR1);
 
       uint64_t long_result = val1 + val2;
 
-      state->registers[instr.DR - 1] = (uint32_t) long_result;
+      state->write_reg(instr.DR, (uint32_t) long_result);
 
       state->flags.of = (sign_bit(val1) == sign_bit(val2) && sign_bit(val1) != sign_bit(long_result));
       state->flags.cf = (long_result >> 32u) & 1u;
-      state->flags.zf = (uint32_t)long_result == 0;
+      state->flags.zf = (uint32_t) long_result == 0;
       state->flags.sf = sign_bit(long_result);
       break;
     }
     case 0x2: { // SUB
-      uint64_t val2 = (uint32_t) -state->registers[instr.SR2 - 1];
+      uint64_t val2 = (uint32_t) -state->read_reg(instr.SR2);
       if (instr.RI) { // IMM Mode
         val2 = (uint32_t) -instr.decode_imm();
       }
 
-      uint64_t val1 = state->registers[instr.SR1 - 1];
+      uint64_t val1 = state->read_reg(instr.SR1);
 
       uint64_t long_result = val1 + val2;
 
-      state->registers[instr.DR - 1] = (uint32_t) long_result;
+      state->write_reg(instr.DR, (uint32_t) long_result);
 
       state->flags.of = (sign_bit(val1) == sign_bit(val2) && sign_bit(val1) != sign_bit(long_result));
       state->flags.cf = (long_result >> 32u) & 1u;
-      state->flags.zf = (uint32_t)long_result == 0;
+      state->flags.zf = (uint32_t) long_result == 0;
       state->flags.sf = sign_bit(long_result);
       break;
     }
     case 0x3: { // MUL
-      uint32_t val2 = state->registers[instr.SR2 - 1];
+      uint32_t val2 = state->read_reg(instr.SR2);
       if (instr.RI) { // IMM Mode
         val2 = instr.decode_imm();
       }
 
-      uint32_t val1 = state->registers[instr.SR1 - 1];
+      uint32_t val1 = state->read_reg(instr.SR1);
 
       uint32_t result = val1 * val2;
 
-      state->registers[instr.DR - 1] = result;
+      state->write_reg(instr.DR, result);
 
       break;
     }
@@ -141,12 +141,12 @@ void tick(tl45_state *state) {
     case 0x7: // XOR
     case 0x8: // AND
     case 0x9: { // NOT
-      uint32_t val2 = state->registers[instr.SR2 - 1];
+      uint32_t val2 = state->read_reg(instr.SR2);
       if (instr.RI) { // IMM Mode
         val2 = instr.decode_imm();
       }
 
-      uint32_t val1 = state->registers[instr.SR1 - 1];
+      uint32_t val1 = state->read_reg(instr.SR1);
 
       uint32_t result = 0;
       switch (opcode) {
@@ -167,7 +167,7 @@ void tick(tl45_state *state) {
       }
 
       // TODO change all reg access
-      state->registers[instr.DR - 1] = result;
+      state->write_reg(instr.DR, result);
 
       state->flags.of = 0;
       state->flags.cf = 0;
@@ -179,12 +179,12 @@ void tick(tl45_state *state) {
     case 0xA: // SHL
     case 0xB: // SHR
     case 0x5: { // SHRA
-      uint32_t val2 = state->registers[instr.SR2 - 1];
+      uint32_t val2 = state->read_reg(instr.SR2);
       if (instr.RI) { // IMM Mode
         val2 = instr.decode_imm();
       }
 
-      uint32_t val1 = state->registers[instr.SR1 - 1];
+      uint32_t val1 = state->read_reg(instr.SR1);
 
       uint32_t result = 0;
       switch (opcode) {
@@ -195,23 +195,41 @@ void tick(tl45_state *state) {
           result = val1 >> val2;
           break;
         case 0x5:
-          result = (uint32_t) ((int32_t)val1 >> (int32_t)val2);
+          result = (uint32_t) ((int32_t) val1 >> (int32_t) val2);
           break;
         default:
           assert(0);
       }
 
       // TODO change all reg access
-      state->registers[instr.DR - 1] = result;
+      state->write_reg(instr.DR, result);
 
       break;
     }
     case 0xC:
       break; // JUMPs
-    case 0xD:
-      break; // CALL
-    case 0xE:
-      break; // RET
+    case 0xD: { // CALL
+
+      uint32_t addr = state->read_reg(instr.SR1) + (int32_t) (int16_t) instr.raw_imm;
+      
+      uint32_t decr_sp = state->read_reg(instr.DR) - 4;
+      state->write_reg(instr.DR, decr_sp);
+      
+      state->memory[decr_sp] = state->pc;
+      
+      state->pc = addr;
+      
+      break;
+    }
+    case 0xE: { // RET
+
+      uint32_t incr_sp = state->read_reg(instr.DR) + 4;
+      state->write_reg(instr.DR, incr_sp);
+
+      state->pc = state->memory[incr_sp - 4];
+      
+      break;
+    }
 
     case 0x10: // LHW
     case 0x11: // LHSWE
@@ -221,8 +239,8 @@ void tick(tl45_state *state) {
     case 0x13: // SB
     case 0x14: // LW
     case 0x15: { // SW
-      uint32_t addr = state->registers[instr.SR1 - 1] + (int32_t) (int16_t) instr.raw_imm;
-      uint32_t value_to_write = state->registers[instr.DR - 1];
+      uint32_t addr = state->read_reg(instr.SR1) + (int32_t) (int16_t) instr.raw_imm;
+      uint32_t value_to_write = state->read_reg(instr.DR);
       uint32_t value_read = 0;
       bool is_read = false;
 
@@ -240,8 +258,11 @@ void tick(tl45_state *state) {
 
           break;
         }
-        case 0x16: // SHW
+        case 0x16: { // SHW
+          state->memory[addr + 0] = (uint8_t) ((value_to_write >> 8u) & 0xFFu);
+          state->memory[addr + 1] = (uint8_t) ((value_to_write >> 0u) & 0xFFu);
           break;
+        }
         case 0x0F: // LBSE
         case 0x12: { // LB
 
@@ -255,18 +276,35 @@ void tick(tl45_state *state) {
 
           break;
         }
-        case 0x13: // SB
+        case 0x13: { // SB
+          
+          state->memory[addr] = (uint8_t) (value_to_write & 0xFFu);
           break;
-        case 0x14: // LW
+        }
+        case 0x14: { // LW
+
+          is_read = true;
+          value_read = (uint32_t) (state->memory[addr] << 24u)
+                       | (uint32_t) (state->memory[addr + 1] << 16u)
+                       | (uint32_t) (state->memory[addr + 2] << 8u)
+                       | (uint32_t) (state->memory[addr + 3]);
+
           break;
-        case 0x15: // SW
+        }
+        case 0x15: { // SW
+
+          state->memory[addr + 0] = (uint8_t) ((value_to_write >> 24u) & 0xFFu);
+          state->memory[addr + 1] = (uint8_t) ((value_to_write >> 16u) & 0xFFu);
+          state->memory[addr + 2] = (uint8_t) ((value_to_write >> 8u) & 0xFFu);
+          state->memory[addr + 3] = (uint8_t) ((value_to_write >> 0u) & 0xFFu);
           break;
+        }
         default:
           assert(0);
       }
 
       if (is_read) {
-        state->registers[instr.DR - 1] = value_read;
+        state->write_reg(instr.DR, value_read);
       }
 
       break;
@@ -274,17 +312,17 @@ void tick(tl45_state *state) {
 
     case 0x17: // SDIV
     case 0x18: { // UDIV
-      uint32_t val2 = state->registers[instr.SR2 - 1];
+      uint32_t val2 = state->read_reg(instr.SR2);
       if (instr.RI) { // IMM Mode
         val2 = instr.decode_imm();
       }
 
-      uint32_t val1 = state->registers[instr.SR1 - 1];
+      uint32_t val1 = state->read_reg(instr.SR1);
 
       uint32_t result = 0;
       switch (opcode) {
         case 0x17:
-          result = (uint32_t) ((int32_t)val1 / (int32_t)val2);
+          result = (uint32_t) ((int32_t) val1 / (int32_t) val2);
           break;
         case 0x18:
           result = val1 / val2;
@@ -294,7 +332,7 @@ void tick(tl45_state *state) {
       }
 
       // TODO change all reg access
-      state->registers[instr.DR - 1] = result;
+      state->write_reg(instr.DR, result);
 
       break;
     }
