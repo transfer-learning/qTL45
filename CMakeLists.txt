@@ -21,7 +21,7 @@ include_directories(emulator/tl45)
 include_directories(emulator/scomp)
 add_executable(tl45_emu
         main.cpp
-        emulator/scomp/SCOMPEmulator.cpp
+        # emulator/scomp/SCOMPEmulator.cpp
         emulator/tl45/tl45_emu_core.cpp
         emulator/tl45/TL45EmulatorState.cpp
         TLEmuRegisterListModel.cpp

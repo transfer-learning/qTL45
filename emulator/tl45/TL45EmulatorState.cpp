@@ -31,6 +31,27 @@ uint64_t TL45EmulatorState::getProgramCounterValue() {
   return 0;
 }
 
-uint64_t TL45EmulatorState::getMemoryMaxValue() {
-  return (1UL << 20U) - 1;
+unsigned int TL45EmulatorState::getMemoryAddrWidth() {
+  return 32;
 }
+
+unsigned int TL45EmulatorState::getMemoryDataWidth() {
+  return 8;
+}
+
+MemoryMapping TL45EmulatorState::getMemoryMapping(uint64_t addr) {
+  return MemoryMapping::STANDARD_MEMORY;
+}
+
+uint64_t TL45EmulatorState::getMemoryValue(uint64_t addr) {
+  return std::rand();
+}
+
+void TL45EmulatorState::setMemoryValue(uint64_t addr, uint64_t data) {
+
+}
+
+std::string TL45EmulatorState::getMemoryDisassembly(uint64_t &addr) {
+  return std::string("memes");
+}
+

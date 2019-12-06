@@ -11,7 +11,7 @@
 
 class TLEmuMemoryModel : public QAbstractListModel {
 public:
-  TLEmuMemoryModel(AbstractEmulatorState *state);
+  explicit TLEmuMemoryModel(AbstractEmulatorState *state) : state(state), baseAddress(state->getProgramCounterValue()) {}
 
   int rowCount(const QModelIndex &parent) const override;
 
@@ -19,6 +19,11 @@ public:
 
 private:
   AbstractEmulatorState* state;
+  uint64_t baseAddress;
+
+  void getDisplayLimits(uint64_t &min, uint64_t &max) const;
+
+  std::string formatMemoryValue(uint64_t addr) const;
 };
 
 

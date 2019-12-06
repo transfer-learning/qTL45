@@ -21,7 +21,7 @@ public:
 
   uint64_t getProgramCounterValue() override;
 
-  uint64_t getMemoryMaxValue() override;
+
 
 };
 

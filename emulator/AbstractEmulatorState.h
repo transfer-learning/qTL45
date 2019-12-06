@@ -9,6 +9,12 @@
 #include <cstdint>
 #include <string>
 
+enum class MemoryMapping {
+    NOT_MAPPED,
+    STANDARD_MEMORY,
+    IO_MEMORY
+};
+
 class AbstractEmulatorState {
 public:
   virtual uint16_t getRegisterCount() = 0;
@@ -19,7 +25,18 @@ public:
   virtual uint64_t getRegisterValue(uint64_t regID) = 0;
   virtual uint64_t getProgramCounterValue() = 0;
 
-  virtual uint64_t getMemoryMaxValue() = 0;
+
+  virtual unsigned getMemoryAddrWidth() = 0;
+  virtual unsigned getMemoryDataWidth() = 0;
+
+  virtual MemoryMapping getMemoryMapping(uint64_t addr) = 0;
+  virtual uint64_t getMemoryValue(uint64_t addr) = 0;
+  virtual void setMemoryValue(uint64_t addr, uint64_t data) = 0;
+  virtual std::string getMemoryDisassembly(uint64_t &addr) = 0;
+
+
+
+
 };
 
 

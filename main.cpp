@@ -7,8 +7,8 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-//    TL45EmulatorState state{};
-    SCOMPEmulator state{};
+    TL45EmulatorState state{};
+//    SCOMPEmulator state{};
     TLEmulator w(&state);
     w.show();
     return a.exec();

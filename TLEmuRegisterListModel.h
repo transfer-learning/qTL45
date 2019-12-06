@@ -8,7 +8,7 @@
 
 class TLEmuRegisterListModel : public QAbstractListModel{
 public:
-  TLEmuRegisterListModel(AbstractEmulatorState *machine_state);
+  explicit TLEmuRegisterListModel(AbstractEmulatorState *machine_state) : machine_state(machine_state) {}
   int rowCount(const QModelIndex &parent) const override;
 
   QVariant data(const QModelIndex &index, int role) const override;

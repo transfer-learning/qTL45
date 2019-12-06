@@ -13,6 +13,8 @@ TLEmulator::TLEmulator(AbstractEmulatorState *state, QWidget *parent)
   this->ui->register_view->setModel(this->registerListModel);
   this->ui->memory_view->setModel(memoryModel);
 
+
+
   // Setup Toolbar
   QAction* openFile = new QAction("Load File", this);
   connect(openFile, &QAction::triggered, this, &TLEmulator::onMenuItemClick);

@@ -21,7 +21,17 @@ class TL45EmulatorState : public AbstractEmulatorState {
 public:
   uint16_t getRegisterBitSize(uint16_t regID) override;
 
-  uint64_t getMemoryMaxValue() override;
+  unsigned int getMemoryAddrWidth() override;
+
+  unsigned int getMemoryDataWidth() override;
+
+  MemoryMapping getMemoryMapping(uint64_t addr) override;
+
+  uint64_t getMemoryValue(uint64_t addr) override;
+
+  void setMemoryValue(uint64_t addr, uint64_t data) override;
+
+  std::string getMemoryDisassembly(uint64_t &addr) override;
 };
 
 
