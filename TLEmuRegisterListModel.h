@@ -6,9 +6,9 @@
 #include <emulator/AbstractEmulatorState.h>
 #include "tl45_emu_core.h"
 
-class TL45RegisterListModel : public QAbstractListModel{
+class TLEmuRegisterListModel : public QAbstractListModel{
 public:
-  TL45RegisterListModel(AbstractEmulatorState *machine_state);
+  TLEmuRegisterListModel(AbstractEmulatorState *machine_state);
   int rowCount(const QModelIndex &parent) const override;
 
   QVariant data(const QModelIndex &index, int role) const override;

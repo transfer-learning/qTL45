@@ -4,28 +4,28 @@
 
 
 
-TL45emu::TL45emu(AbstractEmulatorState *state, QWidget *parent)
-        : QMainWindow(parent), ui(new Ui::TL45emu) {
+TLEmulator::TLEmulator(AbstractEmulatorState *state, QWidget *parent)
+        : QMainWindow(parent), ui(new Ui::TLEmulator) {
   this->machine_state = state;
   ui->setupUi(this);
-  this->registerListModel = new TL45RegisterListModel(this->machine_state);
+  this->registerListModel = new TLEmuRegisterListModel(this->machine_state);
   this->memoryModel= new TLEmuMemoryModel(this->machine_state);
   this->ui->register_view->setModel(this->registerListModel);
   this->ui->memory_view->setModel(memoryModel);
 
   // Setup Toolbar
   QAction* openFile = new QAction("Load File", this);
-  connect(openFile, &QAction::triggered, this, &TL45emu::onMenuItemClick);
+  connect(openFile, &QAction::triggered, this, &TLEmulator::onMenuItemClick);
   this->ui->toolBar->addAction(openFile);
 }
 
-TL45emu::~TL45emu() {
+TLEmulator::~TLEmulator() {
   delete ui;
   delete registerListModel;
   delete memoryModel;
 }
 
-void TL45emu::onMenuItemClick(bool checked) {
+void TLEmulator::onMenuItemClick(bool checked) {
   static int currentIndex = 0;
   printf("Button: %d \n", checked);
   fflush(stdout);
