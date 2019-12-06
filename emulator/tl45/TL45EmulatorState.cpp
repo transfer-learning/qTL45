@@ -30,3 +30,7 @@ uint64_t TL45EmulatorState::getRegisterValue(uint64_t regID) {
 uint64_t TL45EmulatorState::getProgramCounterValue() {
   return 0;
 }
+
+uint64_t TL45EmulatorState::getMemoryMaxValue() {
+  return (1UL << 20U) - 1;
+}

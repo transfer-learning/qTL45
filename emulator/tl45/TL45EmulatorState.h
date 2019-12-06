@@ -20,6 +20,8 @@ class TL45EmulatorState : public AbstractEmulatorState {
 
 public:
   uint16_t getRegisterBitSize(uint16_t regID) override;
+
+  uint64_t getMemoryMaxValue() override;
 };
 
 

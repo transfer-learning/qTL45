@@ -23,6 +23,7 @@ add_executable(tl45_emu
         emulator/tl45_emu_core.cpp
         emulator/tl45/TL45EmulatorState.cpp
         TL45RegisterListModel.cpp
+        TLEmuMemoryModel.cpp
         tl45emu.cpp
         tl45emu.h
         tl45emu.ui
