@@ -72,14 +72,13 @@ static bool sign_bit(uint32_t data) {
 
 void tick(tl45_state *state) {
   uint32_t instruction = fetch_instruction(state->memory, state->pc);
-  uint8_t opcode = (instruction >> (32U - 5U)) & 0x1FU; // Extract Opcode
-
   DecodedInstruction instr{};
   if (!DecodedInstruction::decode(instruction, instr)) {
     // RIP
     return;
   }
 
+  auto opcode = instr.opcode;
 #ifdef DEBUG
   printf("0x%08X => OP: %02X, DR: %X, SR1: %X, SR2: %X, IMM16: %04X\n", state->pc, opcode, instr.DR, instr.SR1,
          instr.SR2, instr.raw_imm);
@@ -101,7 +100,7 @@ void tick(tl45_state *state) {
 
       state->flags.of = (sign_bit(val1) == sign_bit(val2) && sign_bit(val1) != sign_bit(long_result));
       state->flags.cf = (long_result >> 32u) & 1u;
-      state->flags.zf = (uint32_t)long_result == 0;
+      state->flags.zf = (uint32_t) long_result == 0;
       state->flags.sf = sign_bit(long_result);
       break;
     }
@@ -119,7 +118,7 @@ void tick(tl45_state *state) {
 
       state->flags.of = (sign_bit(val1) == sign_bit(val2) && sign_bit(val1) != sign_bit(long_result));
       state->flags.cf = (long_result >> 32u) & 1u;
-      state->flags.zf = (uint32_t)long_result == 0;
+      state->flags.zf = (uint32_t) long_result == 0;
       state->flags.sf = sign_bit(long_result);
       break;
     }
@@ -195,7 +194,7 @@ void tick(tl45_state *state) {
           result = val1 >> val2;
           break;
         case 0x5:
-          result = (uint32_t) ((int32_t)val1 >> (int32_t)val2);
+          result = (uint32_t) ((int32_t) val1 >> (int32_t) val2);
           break;
         default:
           assert(0);
@@ -206,7 +205,60 @@ void tick(tl45_state *state) {
 
       break;
     }
-    case 0xC:
+    case 0xC: // JUMPS
+    {
+      bool do_jump;
+      switch (instr.DR) {
+        case 0:
+          do_jump = state->flags.of;
+          break; /* jo*/
+        case 1:
+          do_jump = !state->flags.of;
+          break; // jno
+        case 2:
+          do_jump = state->flags.sf;
+          break;// js
+        case 3:
+          do_jump = !state->flags.sf;
+          break; // jns
+        case 4:
+          do_jump = state->flags.zf;
+          break; // je
+        case 5:
+          do_jump = !state->flags.zf;
+          break; // jne
+        case 6:
+          do_jump = state->flags.cf;
+          break; // jb
+        case 7:
+          do_jump = !state->flags.cf;
+          break; // jnb
+        case 8:
+          do_jump = (state->flags.cf | state->flags.zf);
+          break;// jbe
+        case 9:
+          do_jump = (!state->flags.cf) && (!state->flags.zf);
+          break;// ja
+        case 10:
+          do_jump = state->flags.sf ^ state->flags.of;
+          break;// jl
+        case 11:
+          do_jump = (state->flags.sf == state->flags.of);
+          break; // jge
+        case 12:
+          do_jump = state->flags.zf || (state->flags.sf ^ state->flags.of);
+          break; // jle
+        case 13:
+          do_jump = (!state->flags.zf) && (state->flags.sf == state->flags.of);
+          break; // jg
+        default:
+          do_jump = true; // jmp
+      }
+      if (do_jump) {
+        uint32_t target_address = state->read_reg(instr.SR1) + ((int32_t) (int16_t) instr.raw_imm); // SR1 + SEXT IMM
+        state->pc = target_address;
+      }
+    }
       break; // JUMPs
     case 0xD:
       break; // CALL
@@ -284,7 +336,7 @@ void tick(tl45_state *state) {
       uint32_t result = 0;
       switch (opcode) {
         case 0x17:
-          result = (uint32_t) ((int32_t)val1 / (int32_t)val2);
+          result = (uint32_t) ((int32_t) val1 / (int32_t) val2);
           break;
         case 0x18:
           result = val1 / val2;
