@@ -228,23 +228,33 @@ void tick(tl45_state *state) {
 
       switch (opcode) {
         case 0x10: // LHW
-        case 0x11: // LHSWE
+        case 0x11: { // LHSWE
 
           is_read = true;
-          uint16_t raw_data = (uint16_t)(state->memory[addr] << 8u) | (state->memory[addr + 1]);
-          if (opcode == 0x11) {
+          uint16_t raw_data = (uint16_t) (state->memory[addr] << 8u) | (state->memory[addr + 1]);
+          if (opcode == 0x11) { // LHSWE
             value_read = (uint32_t) (int32_t) (int16_t) raw_data;
           } else {
             value_read = (uint32_t) raw_data;
           }
 
           break;
+        }
         case 0x16: // SHW
           break;
         case 0x0F: // LBSE
+        case 0x12: { // LB
+
+          is_read = true;
+          uint8_t raw_data = state->memory[addr];
+          if (opcode == 0x0F) { // LHSWE
+            value_read = (uint32_t) (int32_t) (int8_t) raw_data;
+          } else {
+            value_read = (uint32_t) raw_data;
+          }
+
           break;
-        case 0x12: // LB
-          break;
+        }
         case 0x13: // SB
           break;
         case 0x14: // LW
