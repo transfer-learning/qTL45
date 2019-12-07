@@ -24,11 +24,11 @@ bool TL45EmulatorState::hasRegisterAlias(uint16_t regID) {
 }
 
 uint64_t TL45EmulatorState::getRegisterValue(uint64_t regID) {
-  return 0;
+  return state.read_reg(regID);
 }
 
 uint64_t TL45EmulatorState::getProgramCounterValue() {
-  return 0;
+  return state.pc;
 }
 
 unsigned int TL45EmulatorState::getMemoryAddrWidth() {
@@ -44,14 +44,18 @@ MemoryMapping TL45EmulatorState::getMemoryMapping(uint64_t addr) {
 }
 
 uint64_t TL45EmulatorState::getMemoryValue(uint64_t addr) {
-  return std::rand();
+  return state.memory[addr];
 }
 
 void TL45EmulatorState::setMemoryValue(uint64_t addr, uint64_t data) {
-
+  throw std::runtime_error("not implemented");
 }
 
 std::string TL45EmulatorState::getMemoryDisassembly(uint64_t &addr) {
   return std::string("memes");
+}
+
+void TL45EmulatorState::step() {
+  TL45::tick(&state);
 }
 

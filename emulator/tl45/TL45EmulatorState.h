@@ -6,6 +6,7 @@
 #define TL45_EMU_TL45EMULATORSTATE_H
 
 #include "AbstractEmulatorState.h"
+#include "tl45_emu_core.h"
 
 class TL45EmulatorState : public AbstractEmulatorState {
   uint16_t getRegisterCount() override;
@@ -19,6 +20,10 @@ class TL45EmulatorState : public AbstractEmulatorState {
   uint64_t getProgramCounterValue() override;
 
 public:
+  TL45::tl45_state state;
+
+  void step() override;
+
   uint16_t getRegisterBitSize(uint16_t regID) override;
 
   unsigned int getMemoryAddrWidth() override;

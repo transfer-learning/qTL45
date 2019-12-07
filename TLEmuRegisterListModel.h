@@ -12,6 +12,8 @@ public:
   int rowCount(const QModelIndex &parent) const override;
 
   QVariant data(const QModelIndex &index, int role) const override;
+
+  void registersChanged();
 private:
   AbstractEmulatorState *machine_state;
 };

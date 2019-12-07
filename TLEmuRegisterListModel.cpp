@@ -35,3 +35,7 @@ QVariant TLEmuRegisterListModel::data(const QModelIndex &index, int role) const 
   }
   return QVariant();
 }
+
+void TLEmuRegisterListModel::registersChanged() {
+  emit dataChanged(index(0), index(rowCount(QModelIndex()) - 1));
+}

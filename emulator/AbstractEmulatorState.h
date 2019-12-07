@@ -25,6 +25,8 @@ public:
   virtual uint64_t getRegisterValue(uint64_t regID) = 0;
   virtual uint64_t getProgramCounterValue() = 0;
 
+  virtual void step() = 0;
+
 
   virtual unsigned getMemoryAddrWidth() = 0;
   virtual unsigned getMemoryDataWidth() = 0;

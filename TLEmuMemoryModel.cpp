@@ -5,6 +5,7 @@
 #include <fmt/format.h>
 #include <iostream>
 #include "TLEmuMemoryModel.h"
+#include "tl45/tl45_isa.h"
 
 std::string TLEmuMemoryModel::formatMemoryValue(uint64_t addr) const {
   auto dataWidth = state->getMemoryDataWidth();
@@ -14,7 +15,13 @@ std::string TLEmuMemoryModel::formatMemoryValue(uint64_t addr) const {
       return "";
     case MemoryMapping::IO_MEMORY:
     case MemoryMapping::STANDARD_MEMORY: {
-      uint64_t value = state->getMemoryValue(addr);
+      uint64_t value = 0;
+      for (int i = 0; i < itemWidth; i++) {
+        value <<= 8;
+        value |= state->getMemoryValue(addr + i);
+      }
+
+      dataWidth *= itemWidth;
 
       if (dataWidth <= 4) {
         return fmt::format("0x{:04X}\t0x{:01X}\t", addr, value);
@@ -23,6 +30,12 @@ std::string TLEmuMemoryModel::formatMemoryValue(uint64_t addr) const {
       } else if (dataWidth <= 16) {
         return fmt::format("0x{:04X}\t0x{:04X}\t", addr, value);
       } else if (dataWidth <= 32) {
+
+        if (itemWidth == 4) {
+          std::string s = TL45::disassemble(value);
+          return fmt::format("0x{:04X}\t0x{:08X}\t\t{}", addr, value, s);
+        }
+
         return fmt::format("0x{:04X}\t0x{:08X}\t", addr, value);
       } else {
         return fmt::format("0x{:04X}\t0x{:016X}\t", addr, value);
@@ -33,13 +46,13 @@ std::string TLEmuMemoryModel::formatMemoryValue(uint64_t addr) const {
 
 void TLEmuMemoryModel::getDisplayLimits(uint64_t &min, uint64_t &max) const {
   min = 0;
-  if (baseAddress > 1000) {
-    min = baseAddress - 1000;
+  if (baseAddress > 1000 * itemWidth) {
+    min = baseAddress - 1000 * itemWidth;
   }
 
   max = (1ULL << state->getMemoryAddrWidth()) - 1;
-  if (max - 1000 > baseAddress) {
-    max = baseAddress + 1000;
+  if (max - 1000 * itemWidth > baseAddress) {
+    max = baseAddress + 1000 * itemWidth;
   }
 }
 
@@ -57,9 +70,13 @@ QVariant TLEmuMemoryModel::data(const QModelIndex &index, int role) const {
     uint64_t min, max;
     getDisplayLimits(min, max);
 
-    uint64_t addr = min + row;
+    uint64_t addr = min + row * itemWidth;
 
     return QString::fromStdString(formatMemoryValue(addr));
   }
   return QVariant();
+}
+
+void TLEmuMemoryModel::memoryChanged() {
+  emit dataChanged(index(0), index(rowCount(QModelIndex()) - 1));
 }

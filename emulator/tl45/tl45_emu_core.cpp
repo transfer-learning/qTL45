@@ -78,6 +78,8 @@ void tick(tl45_state *state) {
     return;
   }
 
+  state->pc += 4;
+
   auto opcode = instr.opcode;
 #ifdef DEBUG
   printf("0x%08X => OP: %02X, DR: %X, SR1: %X, SR2: %X, IMM16: %04X\n", state->pc, opcode, instr.DR, instr.SR1,
@@ -263,14 +265,17 @@ void tick(tl45_state *state) {
     case 0xD: { // CALL
 
       uint32_t addr = state->read_reg(instr.SR1) + (int32_t) (int16_t) instr.raw_imm;
-      
+
       uint32_t decr_sp = state->read_reg(instr.DR) - 4;
       state->write_reg(instr.DR, decr_sp);
-      
-      state->memory[decr_sp] = state->pc;
-      
+
+      state->memory[decr_sp + 0] = (state->pc >> 24u) & 0xFFu;
+      state->memory[decr_sp + 1] = (state->pc >> 16u) & 0xFFu;
+      state->memory[decr_sp + 2] = (state->pc >> 8u) & 0xFFu;
+      state->memory[decr_sp + 3] = (state->pc) & 0xFFu;
+
       state->pc = addr;
-      
+
       break;
     }
     case 0xE: { // RET
@@ -278,8 +283,12 @@ void tick(tl45_state *state) {
       uint32_t incr_sp = state->read_reg(instr.DR) + 4;
       state->write_reg(instr.DR, incr_sp);
 
-      state->pc = state->memory[incr_sp - 4];
-      
+      uint32_t addr = incr_sp - 4;
+      state->pc = (uint32_t) (state->memory[addr] << 24u)
+                  | (uint32_t) (state->memory[addr + 1] << 16u)
+                  | (uint32_t) (state->memory[addr + 2] << 8u)
+                  | (uint32_t) (state->memory[addr + 3]);
+
       break;
     }
 
@@ -329,7 +338,7 @@ void tick(tl45_state *state) {
           break;
         }
         case 0x13: { // SB
-          
+
           state->memory[addr] = (uint8_t) (value_to_write & 0xFFu);
           break;
         }

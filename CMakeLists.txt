@@ -24,6 +24,7 @@ add_executable(tl45_emu
         # emulator/scomp/SCOMPEmulator.cpp
         emulator/tl45/tl45_emu_core.cpp
         emulator/tl45/TL45EmulatorState.cpp
+        emulator/tl45/tl45_isa.cpp
         TLEmuRegisterListModel.cpp
         TLEmuMemoryModel.cpp
         tl45emu.cpp
