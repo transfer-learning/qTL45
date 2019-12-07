@@ -2,6 +2,7 @@
 // Created by codetector on 12/3/19.
 //
 
+#include <stdexcept>
 #include "TL45EmulatorState.h"
 
 uint16_t TL45EmulatorState::getRegisterCount() {
