@@ -26,17 +26,11 @@ std::string TLEmuMemoryModel::formatMemoryValue(uint64_t addr) const {
       if (dataWidth <= 4) {
         return fmt::format("0x{:04X}\t0x{:01X}\t", addr, value);
       } else if (dataWidth <= 8) {
-        return fmt::format("0x{:04X}\t0x{:02X}\t", addr, value);
+        return fmt::format("0x{:04X}\t0x{:02X}\t\t{}", addr, value, state->getMemoryDisassembly(addr));
       } else if (dataWidth <= 16) {
         return fmt::format("0x{:04X}\t0x{:04X}\t", addr, value);
       } else if (dataWidth <= 32) {
-
-        if (itemWidth == 4) {
-          std::string s = TL45::disassemble(value);
-          return fmt::format("0x{:04X}\t0x{:08X}\t\t{}", addr, value, s);
-        }
-
-        return fmt::format("0x{:04X}\t0x{:08X}\t", addr, value);
+        return fmt::format("0x{:04X}\t0x{:08X}\t\t{}", addr, value, state->getMemoryDisassembly(addr));
       } else {
         return fmt::format("0x{:04X}\t0x{:016X}\t", addr, value);
       }
@@ -64,14 +58,11 @@ int TLEmuMemoryModel::rowCount(const QModelIndex &parent) const {
 }
 
 QVariant TLEmuMemoryModel::data(const QModelIndex &index, int role) const {
+  auto row = index.row();
+  uint64_t min, max;
+  getDisplayLimits(min, max);
+  uint64_t addr = min + row * itemWidth;
   if (role == Qt::DisplayRole) {
-    auto row = index.row();
-
-    uint64_t min, max;
-    getDisplayLimits(min, max);
-
-    uint64_t addr = min + row * itemWidth;
-
     return QString::fromStdString(formatMemoryValue(addr));
   }
   return QVariant();

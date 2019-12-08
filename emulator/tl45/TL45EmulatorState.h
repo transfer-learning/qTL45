@@ -20,6 +20,11 @@ class TL45EmulatorState : public AbstractEmulatorState {
   uint64_t getProgramCounterValue() override;
 
 public:
+  void clear() override;
+
+  int load(std::string fileName) override;
+
+public:
   TL45::tl45_state state;
 
   void step() override;

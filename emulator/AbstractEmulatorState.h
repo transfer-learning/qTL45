@@ -26,6 +26,8 @@ public:
   virtual uint64_t getProgramCounterValue() = 0;
 
   virtual void step() = 0;
+  virtual void clear() = 0;
+  virtual int load(std::string) = 0;
 
 
   virtual unsigned getMemoryAddrWidth() = 0;
@@ -35,9 +37,6 @@ public:
   virtual uint64_t getMemoryValue(uint64_t addr) = 0;
   virtual void setMemoryValue(uint64_t addr, uint64_t data) = 0;
   virtual std::string getMemoryDisassembly(uint64_t &addr) = 0;
-
-
-
 
 };
 

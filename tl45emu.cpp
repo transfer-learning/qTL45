@@ -1,5 +1,6 @@
 #include <iostream>
 #include <QShortcut>
+#include <QtWidgets/QFileDialog>
 #include "tl45emu.h"
 #include "./ui_tl45emu.h"
 
@@ -16,11 +17,11 @@ TLEmulator::TLEmulator(AbstractEmulatorState *state, QWidget *parent)
 
 
   // Setup Toolbar
-  QAction *openFile = new QAction("Load File", this);
+  auto *openFile = new QAction("Load File", this);
   connect(openFile, &QAction::triggered, this, &TLEmulator::onMenuItemClick);
   this->ui->toolBar->addAction(openFile);
 
-  QAction *step = new QAction("Step", this);
+  auto *step = new QAction("Step", this);
 
   connect(step, &QAction::triggered, this, [=](bool checked) {
     state->step();
@@ -32,9 +33,9 @@ TLEmulator::TLEmulator(AbstractEmulatorState *state, QWidget *parent)
   this->ui->toolBar->addAction(step);
 
   {
-    QAction *step = new QAction("Step 10K", this);
+    auto *step10K = new QAction("Step 10K", this);
 
-    connect(step, &QAction::triggered, this, [=](bool checked) {
+    connect(step10K, &QAction::triggered, this, [=](bool checked) {
       for (int i = 0; i < 10000; i++) {
         state->step();
       }
@@ -43,7 +44,7 @@ TLEmulator::TLEmulator(AbstractEmulatorState *state, QWidget *parent)
       memoryModel->memoryChanged();
     });
 
-    this->ui->toolBar->addAction(step);
+    this->ui->toolBar->addAction(step10K);
   }
 
   auto shortcut = new QShortcut(QKeySequence("Ctrl+S"), this);
@@ -63,9 +64,8 @@ TLEmulator::~TLEmulator() {
 }
 
 void TLEmulator::onMenuItemClick(bool checked) {
-  static int currentIndex = 0;
-  printf("Button: %d \n", checked);
-  fflush(stdout);
-  ui->memory_view->setCurrentIndex(memoryModel->index(currentIndex += 100));
+  QString filename = QFileDialog::getOpenFileName(this, tr("Open Binary File"), "",
+          tr("All Files (*)"));
+  machine_state->load(filename.toStdString());
 }
 

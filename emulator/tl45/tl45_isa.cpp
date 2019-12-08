@@ -3,142 +3,140 @@
 //
 
 #include "tl45_isa.h"
+#include "tl45_emu_core.h"
 
 #include <string>
 #include <stdint.h>
-
 namespace TL45 {
-
 std::string disassemble(uint32_t instruction) {
-  uint8_t opcode = instruction >> (32U - 5U) & 0x1FU;
-  uint8_t RHZ = instruction >> (32U - 5U - 3U) & 0x7U;
-  uint16_t IMM16 = instruction & 0xFFFF;
-  uint16_t SR2 = (instruction >> 12) & 0xFU;
-  uint16_t SR1 = (instruction >> 16) & 0xFU;
-  uint16_t DR = (instruction >> 20) & 0xFU;
-  std::string opcode_part;
-  switch (opcode) {
+
+  static const std::string OpNames[0x19] = {"NOP", "ADD", // 0x1
+                                "SUB", "MUL", "_NOP", // 0x4,
+                                "SHRA", "OR", "XOR", // 0x7
+                                "AND", "NOT", "SHL", // 0xa
+                                "SHR", "J", "CALL", // 0xd
+                                "RET", "LBSE", "LHW", // 0x10
+                                "LHWSE", "LB", "SB", // 0x13
+                                "LW", "SW", "SHW", // 0x16
+                                "SDIV", "UDIV" // 0x18
+                                };
+
+  DecodedInstruction inst{};
+  TL45::DecodedInstruction::decode(instruction, inst);
+  std::string disassembly;
+  switch (inst.opcode) {
     case 0x0:
-      opcode_part = "NOP ";
+      disassembly = "NOP ";
       break;
     case 0x1:
-      opcode_part = "ADD";
-      break;
     case 0x2:
-      opcode_part = "SUB ";
-      break;
     case 0x3:
-      opcode_part = "MUL ";
-      break;
-    case 0x4:
-      opcode_part = "DIV(NI) ";
+    case 0x6:
+    case 0x7:
+    case 0x8:
+    case 0x9:
+      {
+      disassembly = OpNames[inst.opcode];
+      if (inst.RI) {
+        disassembly += "i";
+        if (inst.LH) {
+          disassembly += "h";
+        }
+      }
+    }
       break;
     case 0x5:
-      opcode_part = "SHRA";
-      break;
-    case 0x6:
-      opcode_part = "OR ";
-      break;
-    case 0x7:
-      opcode_part = "XOR ";
-      break;
-    case 0x8:
-      opcode_part = "AND ";
-      break;
-    case 0x9:
-      opcode_part = "NOT ";
-      break;
     case 0xa:
-      opcode_part = "SHL ";
+      disassembly = "SHL ";
       break;
     case 0xb:
-      opcode_part = "SHR ";
+      disassembly = "SHR ";
       break;
     case 0xc:
-      opcode_part = "J";
+      disassembly = "J";
       break;
     case 0xd:
-      opcode_part = "CALL ";
+      disassembly = "CALL ";
       break;
     case 0xe:
-      opcode_part = "RET ";
+      disassembly = "RET ";
       break;
     case 0xf:
-      opcode_part = "LBSE ";
+      disassembly = "LBSE ";
       break;
     case 0x10:
-      opcode_part = "LHW ";
+      disassembly = "LHW ";
       break;
     case 0x11:
-      opcode_part = "LHWSE ";
+      disassembly = "LHWSE ";
       break;
     case 0x12:
-      opcode_part = "LB ";
+      disassembly = "LB ";
       break;
     case 0x13:
-      opcode_part = "SB ";
+      disassembly = "SB ";
       break;
     case 0x14:
-      opcode_part = "LW ";
+      disassembly = "LW ";
       break;
     case 0x15:
-      opcode_part = "SW ";
+      disassembly = "SW ";
       break;
     default:
-      opcode_part = "INVALID";
+      disassembly = "INVALID";
       break;
   }
-  if (opcode == 0xc) {
-    switch (DR) {
+  if (inst.opcode == 0xc) {
+    switch (inst.DR) {
       case 0x0:
-        opcode_part += "O ";
+        disassembly += "O ";
         break;
       case 0x1:
-        opcode_part += "NO ";
+        disassembly += "NO ";
         break;
       case 0x2:
-        opcode_part += "S ";
+        disassembly += "S ";
         break;
       case 0x3:
-        opcode_part += "NS ";
+        disassembly += "NS ";
         break;
       case 0x4:
-        opcode_part += "E ";
+        disassembly += "E ";
         break;
       case 0x5:
-        opcode_part += "NE ";
+        disassembly += "NE ";
         break;
       case 0x6:
-        opcode_part += "B ";
+        disassembly += "B ";
         break;
       case 0x7:
-        opcode_part += "NB ";
+        disassembly += "NB ";
         break;
       case 0x8:
-        opcode_part += "BE ";
+        disassembly += "BE ";
         break;
       case 0x9:
-        opcode_part += "A ";
+        disassembly += "A ";
         break;
       case 0xa:
-        opcode_part += "L ";
+        disassembly += "L ";
         break;
       case 0xb:
-        opcode_part += "GE ";
+        disassembly += "GE ";
         break;
       case 0xc:
-        opcode_part += "LE ";
+        disassembly += "LE ";
         break;
       case 0xe:
-        opcode_part += "G ";
+        disassembly += "G ";
         break;
       case 0xf:
-        opcode_part += "UMP ";
+        disassembly += "UMP ";
         break;
     }
   }
   std::string operand_part;
-  return opcode_part;
+  return disassembly;
 }
 
 };
