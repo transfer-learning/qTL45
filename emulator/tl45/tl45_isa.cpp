@@ -7,6 +7,8 @@
 
 #include <string>
 #include <stdint.h>
+#include <fmt/format.h>
+
 namespace TL45 {
 std::string disassemble(uint32_t instruction) {
 
@@ -42,6 +44,9 @@ std::string disassemble(uint32_t instruction) {
         if (inst.LH) {
           disassembly += "h";
         }
+        disassembly = fmt::format("{} r{}, r{}, {}", disassembly, inst.DR, inst.SR1, (int16_t)inst.raw_imm);
+      } else {
+        disassembly = fmt::format("{} r{}, r{}, r{}", disassembly, inst.DR, inst.SR1, inst.SR2);
       }
     }
       break;
@@ -127,10 +132,10 @@ std::string disassemble(uint32_t instruction) {
       case 0xc:
         disassembly += "LE ";
         break;
-      case 0xe:
+      case 0xd:
         disassembly += "G ";
         break;
-      case 0xf:
+      default:
         disassembly += "UMP ";
         break;
     }

@@ -82,9 +82,7 @@ void TL45EmulatorState::clear() {
 }
 
 int TL45EmulatorState::load(std::string fileName) {
-  munmap(this->state.memory, std::numeric_limits<uint32_t>::max());
-  state.memory = (uint8_t *) mmap(nullptr, std::numeric_limits<uint32_t>::max(),
-                                  PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_NORESERVE, 0, 0);
+  this->clear();
   FILE *f = fopen(fileName.c_str(), "r");
   if (!f) {
     return -1;

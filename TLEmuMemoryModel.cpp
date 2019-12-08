@@ -4,6 +4,7 @@
 
 #include <fmt/format.h>
 #include <iostream>
+#include <QtGui/QColor>
 #include "TLEmuMemoryModel.h"
 #include "tl45/tl45_isa.h"
 
@@ -58,12 +59,22 @@ int TLEmuMemoryModel::rowCount(const QModelIndex &parent) const {
 }
 
 QVariant TLEmuMemoryModel::data(const QModelIndex &index, int role) const {
+  static const QColor white = QColor(Qt::white);
+  static const QColor blue = QColor::fromRgb(56, 192, 255);
   auto row = index.row();
   uint64_t min, max;
   getDisplayLimits(min, max);
   uint64_t addr = min + row * itemWidth;
   if (role == Qt::DisplayRole) {
     return QString::fromStdString(formatMemoryValue(addr));
+  }
+  if (addr == state->getProgramCounterValue()) {
+    if (role == Qt::TextColorRole) {
+      return white;
+    }
+    if (role == Qt::BackgroundColorRole) {
+      return blue;
+    }
   }
   return QVariant();
 }
