@@ -10,17 +10,30 @@
 #include <sys/stat.h>
 
 uint16_t TL45EmulatorState::getRegisterCount() {
-  return 16;
+  return 16+4;
 }
 
 std::string TL45EmulatorState::getRegisterName(uint16_t regID) {
   if (regID < 16) {
     return "r" + std::to_string(regID);
   }
+  switch (regID) {
+    case 16:
+      return "ZF";
+    case 17:
+      return "SF";
+    case 18:
+      return "OF";
+    case 19:
+      return "CF";
+    default:
+      break;
+  }
   return "UNKNOWN";
 }
 
 uint16_t TL45EmulatorState::getRegisterBitSize(uint16_t regID) {
+  if (regID >= 16) return 1;
   return 32;
 }
 
@@ -29,7 +42,21 @@ bool TL45EmulatorState::hasRegisterAlias(uint16_t regID) {
 }
 
 uint64_t TL45EmulatorState::getRegisterValue(uint64_t regID) {
-  return state.read_reg(regID);
+  if (regID < 16)
+    return state.read_reg(regID);
+  switch (regID) {
+    case 16:
+      return state.flags.zf;
+    case 17:
+      return state.flags.sf;
+    case 18:
+      return state.flags.of;
+    case 19:
+      return state.flags.cf;
+    default:
+      break;
+  }
+  return 0;
 }
 
 uint64_t TL45EmulatorState::getProgramCounterValue() {

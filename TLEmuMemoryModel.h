@@ -16,13 +16,13 @@ public:
   int rowCount(const QModelIndex &parent) const override;
 
   QVariant data(const QModelIndex &index, int role) const override;
+  QModelIndex indexAddress() const;
 
   void memoryChanged();
 private:
   AbstractEmulatorState* state;
   uint64_t baseAddress;
   int itemWidth;
-
   void getDisplayLimits(uint64_t &min, uint64_t &max) const;
 
   std::string formatMemoryValue(uint64_t addr) const;

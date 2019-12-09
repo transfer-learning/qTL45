@@ -22,6 +22,10 @@ std::string disassemble(uint32_t instruction) {
                                 "LW", "SW", "SHW", // 0x16
                                 "SDIV", "UDIV" // 0x18
                                 };
+  static const std::string JumpCodes[] = {"O", "NO", "S", "NS",
+                                          "E", "NE", "B", "NB",
+                                          "BE", "A", "L", "GE",
+                                          "LE", "G", "UMP", "UMP"};
 
   DecodedInstruction inst{};
   TL45::DecodedInstruction::decode(instruction, inst);
@@ -37,14 +41,15 @@ std::string disassemble(uint32_t instruction) {
     case 0x7:
     case 0x8:
     case 0x9:
+      // Arithmetic RI LH RRI / RRR
       {
       disassembly = OpNames[inst.opcode];
       if (inst.RI) {
-        disassembly += "i";
         if (inst.LH) {
-          disassembly += "h";
+          disassembly = fmt::format("{}ih r{}, r{}, {}", disassembly, inst.DR, inst.SR1, (int16_t) inst.raw_imm);
+        } else {
+          disassembly = fmt::format("{}i r{}, r{}, {}", disassembly, inst.DR, inst.SR1, (int16_t) inst.raw_imm);
         }
-        disassembly = fmt::format("{} r{}, r{}, {}", disassembly, inst.DR, inst.SR1, (int16_t)inst.raw_imm);
       } else {
         disassembly = fmt::format("{} r{}, r{}, r{}", disassembly, inst.DR, inst.SR1, inst.SR2);
       }
@@ -52,93 +57,33 @@ std::string disassemble(uint32_t instruction) {
       break;
     case 0x5:
     case 0xa:
-      disassembly = "SHL ";
-      break;
     case 0xb:
-      disassembly = "SHR ";
+      // Shifts
+      disassembly = fmt::format("{} {}", OpNames[inst.opcode], inst.raw_imm);
       break;
     case 0xc:
-      disassembly = "J";
+      disassembly = fmt::format("J{} 0x{:X}(r{})", JumpCodes[inst.DR], (int16_t)inst.raw_imm, inst.SR1);
       break;
     case 0xd:
-      disassembly = "CALL ";
+      disassembly = fmt::format("CALL 0x{:X}(r{})", (int16_t)inst.raw_imm, inst.SR1);
       break;
     case 0xe:
-      disassembly = "RET ";
+      disassembly = "RET";
       break;
     case 0xf:
-      disassembly = "LBSE ";
-      break;
     case 0x10:
-      disassembly = "LHW ";
-      break;
     case 0x11:
-      disassembly = "LHWSE ";
-      break;
     case 0x12:
-      disassembly = "LB ";
-      break;
     case 0x13:
-      disassembly = "SB ";
-      break;
     case 0x14:
-      disassembly = "LW ";
-      break;
     case 0x15:
-      disassembly = "SW ";
+    case 0x16:
+      // Load and stores
+      disassembly = fmt::format("{} r{} {}(r{})", OpNames[inst.opcode], inst.DR, (uint16_t)inst.raw_imm, inst.SR1);
       break;
     default:
       disassembly = "INVALID";
       break;
-  }
-  if (inst.opcode == 0xc) {
-    switch (inst.DR) {
-      case 0x0:
-        disassembly += "O ";
-        break;
-      case 0x1:
-        disassembly += "NO ";
-        break;
-      case 0x2:
-        disassembly += "S ";
-        break;
-      case 0x3:
-        disassembly += "NS ";
-        break;
-      case 0x4:
-        disassembly += "E ";
-        break;
-      case 0x5:
-        disassembly += "NE ";
-        break;
-      case 0x6:
-        disassembly += "B ";
-        break;
-      case 0x7:
-        disassembly += "NB ";
-        break;
-      case 0x8:
-        disassembly += "BE ";
-        break;
-      case 0x9:
-        disassembly += "A ";
-        break;
-      case 0xa:
-        disassembly += "L ";
-        break;
-      case 0xb:
-        disassembly += "GE ";
-        break;
-      case 0xc:
-        disassembly += "LE ";
-        break;
-      case 0xd:
-        disassembly += "G ";
-        break;
-      default:
-        disassembly += "UMP ";
-        break;
-    }
   }
   std::string operand_part;
   return disassembly;

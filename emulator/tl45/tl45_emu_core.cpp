@@ -45,10 +45,6 @@ void tick(tl45_state *state) {
   state->pc += 4;
 
   auto opcode = instr.opcode;
-#ifdef DEBUG
-  printf("0x%08X => OP: %02X, DR: %X, SR1: %X, SR2: %X, IMM16: %04X\n", state->pc, opcode, instr.DR, instr.SR1,
-         instr.SR2, instr.raw_imm);
-#endif
   switch (opcode) {
     case 0x0:
       break; // NOP
