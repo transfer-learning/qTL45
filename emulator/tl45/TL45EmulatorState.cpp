@@ -5,9 +5,13 @@
 #include <stdexcept>
 #include "TL45EmulatorState.h"
 #include "tl45_isa.h"
+#ifdef _WIN32
+#include <Windows.h>
+#undef max
+#else
 #include <sys/mman.h>
-#include <gmpxx.h>
 #include <sys/stat.h>
+#endif
 
 uint16_t TL45EmulatorState::getRegisterCount() {
   return 16+4;
@@ -95,9 +99,15 @@ void TL45EmulatorState::step() {
 }
 
 void TL45EmulatorState::clear() {
+#ifdef _WIN32
+  VirtualFree(this->state.memory, 0, MEM_RELEASE);
+  state.memory = (uint8_t *) VirtualAlloc(nullptr, std::numeric_limits<uint32_t>::max(),
+                                        MEM_RESERVE, PAGE_READWRITE);
+#else
   munmap(this->state.memory, std::numeric_limits<uint32_t>::max());
   state.memory = (uint8_t *) mmap(nullptr, std::numeric_limits<uint32_t>::max(),
                                         PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_NORESERVE, 0, 0);
+#endif
   for (int i = 0; i < 15; ++i) {
     state.registers[i] = 0;
   }

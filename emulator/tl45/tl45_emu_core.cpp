@@ -26,7 +26,7 @@ struct u32_carry {
 struct u32_carry add_carryout(uint32_t x, uint32_t y) {
   uint32_t retval = x + y;
   unsigned carry = (retval < x);
-  return (struct u32_carry) {retval, carry};
+  return u32_carry{retval, carry};
 }
 
 
