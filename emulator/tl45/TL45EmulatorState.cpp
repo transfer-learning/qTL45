@@ -103,6 +103,7 @@ void TL45EmulatorState::clear() {
   VirtualFree(this->state.memory, 0, MEM_RELEASE);
   state.memory = (uint8_t *) VirtualAlloc(nullptr, std::numeric_limits<uint32_t>::max(),
                                         MEM_RESERVE, PAGE_READWRITE);
+  printf("mem at %p\n", state.memory);
 #else
   munmap(this->state.memory, std::numeric_limits<uint32_t>::max());
   state.memory = (uint8_t *) mmap(nullptr, std::numeric_limits<uint32_t>::max(),
@@ -120,11 +121,14 @@ void TL45EmulatorState::clear() {
 
 int TL45EmulatorState::load(std::string fileName) {
   this->clear();
-  FILE *f = fopen(fileName.c_str(), "r");
+  FILE *f = fopen(fileName.c_str(), "rb");
   if (!f) {
     return -1;
   }
-  size_t bytesLoaded = fread(state.memory, 1, std::numeric_limits<uint32_t>::max(), f);
+  fseek(f, 0, SEEK_END);
+  long fsize = ftell(f);
+  fseek(f, 0, SEEK_SET);
+  size_t bytesLoaded = fread(state.memory, 1, fsize, f);
   printf("%zul bytes loaded.\n", bytesLoaded);
   return bytesLoaded > 0 ? 0 : -1;
 }
