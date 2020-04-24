@@ -128,7 +128,12 @@ int TL45EmulatorState::load(std::string fileName) {
   fseek(f, 0, SEEK_END);
   long fsize = ftell(f);
   fseek(f, 0, SEEK_SET);
+#ifdef _WIN32
+  // FUCK YOU WINDOWS!
+  VirtualAlloc(state.memory, fsize, MEM_COMMIT, PAGE_READWRITE);
+#endif
   size_t bytesLoaded = fread(state.memory, 1, fsize, f);
+  fclose(f);
   printf("%zul bytes loaded.\n", bytesLoaded);
   return bytesLoaded > 0 ? 0 : -1;
 }
