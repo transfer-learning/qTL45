@@ -67,9 +67,9 @@ void tick(tl45_state *state) {
       break;
     }
     case 0x2: { // SUB
-      uint64_t val2 = (uint32_t) -state->read_reg(instr.SR2);
+      uint64_t val2 = -(uint64_t)state->read_reg(instr.SR2) & 0x1FFFFFFFF;
       if (instr.RI) { // IMM Mode
-        val2 = (uint32_t) -instr.decode_imm();
+        val2 = -(uint64_t)instr.decode_imm() & 0x1FFFFFFFF;
       }
 
       uint64_t val1 = state->read_reg(instr.SR1);
