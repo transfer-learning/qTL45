@@ -1,3 +1,6 @@
+#include <vector>
+#include <algorithm>
+
 #include <iostream>
 #include <QShortcut>
 #include <QtWidgets/QFileDialog>
@@ -6,7 +9,7 @@
 #include "./ui_tl45emu.h"
 
 
-TLEmulator::TLEmulator(AbstractEmulatorState *state, QWidget *parent)
+TLEmulator::TLEmulator(TL45EmulatorState *state, QWidget *parent)
         : QMainWindow(parent), ui(new Ui::TLEmulator) {
   this->machine_state = state;
   ui->setupUi(this);
@@ -52,6 +55,35 @@ TLEmulator::TLEmulator(AbstractEmulatorState *state, QWidget *parent)
     this->ui->toolBar->addAction(step10K);
   }
 
+  {
+	  auto *printProfile = new QAction("Print Profile", this);
+
+    connect(printProfile, &QAction::triggered, this, [=](bool checked) {
+    	// display profiling info
+    	std::vector<uint32_t> branches;
+			auto& profile = state->state.profile;
+    	for (auto it = profile.branch_count.begin(); it != profile.branch_count.end(); ++it) {
+				branches.push_back(it->first);
+    	}
+			std::sort(branches.begin(), branches.end(), [&profile](const uint32_t& a, const uint32_t& b) -> bool { 
+				return profile.branch_count[a] < profile.branch_count[b]; // we want sort in descending order
+			});
+    	printf("top branch report:\n");
+    	for (int i = 0; i < 200 && i < branches.size(); i++) {
+				auto& taint_set = profile.branch_taint[branches[i]];
+				if (taint_set.size() == 0)
+					continue;
+				printf("%08x | %08x hits, tainted by: ", branches[i], profile.branch_count[branches[i]]);
+				for (uint32_t x : taint_set) {
+					printf("%u ", x);
+				}
+				printf("\n");
+    	}
+    });
+
+    this->ui->toolBar->addAction(printProfile);
+  }
+
   auto shortcut = new QShortcut(QKeySequence("Ctrl+S"), this);
   connect(shortcut, &QShortcut::activated, this, [=]() {
     state->step();
@@ -72,6 +104,8 @@ void TLEmulator::onMenuItemClick(bool checked) {
   QString filename = QFileDialog::getOpenFileName(this, tr("Open Binary File"), "",
           tr("All Files (*)"));
   machine_state->load(filename.toStdString());
+	uint8_t* input_base = (uint8_t*)machine_state->getRawMemoryPtr() + 0x100000;
+	strcpy((char*) input_base, R"({"menu":{"id":"file","value":"File","popup":{"menuitem":[{"value":"New","onclick":"CreateNewDoc"},{"value":"Open","onclick":"OpenDoc","boomer":129},{"value":"Close","onclick":"CloseDoc"}]}},"yeet":99})");
 }
 
 void TLEmulator::gotoMemoryClick(bool checked) {

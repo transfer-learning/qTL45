@@ -50,7 +50,7 @@ bool TL45EmulatorState::hasRegisterAlias(uint16_t regID) {
 
 uint64_t TL45EmulatorState::getRegisterValue(uint64_t regID) {
   if (regID < 16)
-    return state.read_reg(regID);
+    return state.read_reg(regID).value;
   switch (regID) {
     case 16:
       return state.flags.zf;
@@ -94,7 +94,7 @@ void TL45EmulatorState::setMemoryValue(uint64_t addr, uint64_t data) {
 
 std::string TL45EmulatorState::getMemoryDisassembly(uint64_t &addr) {
   if (addr % 4 == 0) {
-    return TL45::disassemble(state.read_word(addr));
+    return TL45::disassemble(state.read_word(addr).value);
   }
   return "";
 }
@@ -114,6 +114,10 @@ void TL45EmulatorState::clear() {
   state.memory = (uint8_t *) mmap(nullptr, std::numeric_limits<uint32_t>::max(),
                                         PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_NORESERVE, 0, 0);
 #endif
+	if (!state.memory) {
+		printf("Failed to allocate memory!\n");
+		exit(1);
+	}
   for (int i = 0; i < 15; ++i) {
     state.registers[i] = 0;
   }
@@ -122,6 +126,17 @@ void TL45EmulatorState::clear() {
   state.flags.zf = 0;
   state.flags.of = 0;
   state.flags.sf = 0;
+
+  // clear taint analysis
+  state.taint.memory.clear();
+  for (int i = 0; i < 15; ++i) {
+    state.taint.registers[i].clear();
+  }
+	state.taint.flags.clear();
+
+	// clear profiling
+	state.profile.branch_count.clear();
+	state.profile.branch_taint.clear();
 }
 
 int TL45EmulatorState::load(std::string fileName) {
@@ -134,12 +149,16 @@ int TL45EmulatorState::load(std::string fileName) {
   long fsize = ftell(f);
   fseek(f, 0, SEEK_SET);
 #ifdef _WIN32
-  // FUCK YOU WINDOWS!
+  // SCREW YOU WINDOWS!
   VirtualAlloc(state.memory, fsize, MEM_COMMIT, PAGE_READWRITE);
 #endif
   size_t bytesLoaded = fread(state.memory, 1, fsize, f);
   fclose(f);
   printf("%zul bytes loaded.\n", bytesLoaded);
   return bytesLoaded > 0 ? 0 : -1;
+}
+
+void* TL45EmulatorState::getRawMemoryPtr() const {
+	return state.memory;
 }
 

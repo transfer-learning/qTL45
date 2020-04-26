@@ -42,6 +42,8 @@ public:
   void setMemoryValue(uint64_t addr, uint64_t data) override;
 
   std::string getMemoryDisassembly(uint64_t &addr) override;
+
+	void* getRawMemoryPtr() const override;
 };
 
 

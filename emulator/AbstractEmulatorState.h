@@ -38,6 +38,7 @@ public:
   virtual void setMemoryValue(uint64_t addr, uint64_t data) = 0;
   virtual std::string getMemoryDisassembly(uint64_t &addr) = 0;
 
+	virtual void* getRawMemoryPtr() const = 0;
 };
 
 

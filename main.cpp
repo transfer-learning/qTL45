@@ -24,10 +24,15 @@ LONG WINAPI PageFaultExceptionFilter(EXCEPTION_POINTERS *ExceptionInfo) {
     return EXCEPTION_CONTINUE_SEARCH;
   }
 
+	if (!state.getRawMemoryPtr()) {
+		return EXCEPTION_CONTINUE_SEARCH;
+	}
+
   LPVOID FaultAddress = (LPVOID) ExceptionInfo->ExceptionRecord->ExceptionInformation[1];
   // printf("fault at %p\n", FaultAddress);
-  if (FaultAddress >= state.state.memory
-    && FaultAddress <= (LPVOID) ((uintptr_t) state.state.memory + std::numeric_limits<uint32_t>::max())) {
+	LPVOID memory_start = state.getRawMemoryPtr();
+	LPVOID memory_end = (LPVOID)((uintptr_t)memory_start + std::numeric_limits<uint32_t>::max());
+  if (FaultAddress >= memory_start && FaultAddress <= memory_end) {
     // printf("committing %p\n", FaultAddress);
     VirtualAlloc(FaultAddress, 1, MEM_COMMIT, PAGE_READWRITE);
     return EXCEPTION_CONTINUE_EXECUTION;
@@ -40,19 +45,10 @@ LONG WINAPI PageFaultExceptionFilter(EXCEPTION_POINTERS *ExceptionInfo) {
 int main(int argc, char *argv[]) {
   QApplication a(argc, argv);
 
+	state.clear(); // allocate virtual memory
 #ifdef _WIN32
   AddVectoredExceptionHandler(FALSE, PageFaultExceptionFilter);
-  state.state.memory = (uint8_t *) VirtualAlloc(nullptr, std::numeric_limits<uint32_t>::max(),
-                                        MEM_RESERVE, PAGE_READWRITE);
-  printf("mem at %p\n", state.state.memory);
-#else
-  state.state.memory = (uint8_t *) mmap(nullptr, std::numeric_limits<uint32_t>::max(),
-                                        PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_NORESERVE, 0, 0);
 #endif
-  if (!state.state.memory) {
-    printf("Failed to allocate memory!\n");
-    return 1;
-  }
   TLEmulator w(&state);
   w.show();
   return a.exec();

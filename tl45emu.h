@@ -5,6 +5,7 @@
 #include <emulator/AbstractEmulatorState.h>
 #include "TLEmuRegisterListModel.h"
 #include "tl45_emu_core.h"
+#include "TL45EmulatorState.h"
 #include "TLEmuMemoryModel.h"
 
 QT_BEGIN_NAMESPACE
@@ -15,7 +16,7 @@ class TLEmulator : public QMainWindow {
 Q_OBJECT
 
 public:
-  TLEmulator(AbstractEmulatorState *state, QWidget *parent = nullptr);
+  TLEmulator(TL45EmulatorState *state, QWidget *parent = nullptr);
 
   ~TLEmulator();
 public slots:
@@ -26,7 +27,7 @@ private:
   Ui::TLEmulator *ui;
   TLEmuRegisterListModel *registerListModel;
   TLEmuMemoryModel *memoryModel;
-  AbstractEmulatorState *machine_state;
+  TL45EmulatorState *machine_state;
 };
 
 #endif // TL45EMU_H
