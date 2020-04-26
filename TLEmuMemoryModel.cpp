@@ -16,24 +16,26 @@ std::string TLEmuMemoryModel::formatMemoryValue(uint64_t addr) const {
       return "";
     case MemoryMapping::IO_MEMORY:
     case MemoryMapping::STANDARD_MEMORY: {
-      uint64_t value = 0;
+      // uint64_t value = 0;
+      std::string hexdump = "";
       for (int i = 0; i < itemWidth; i++) {
-        value <<= 8;
-        value |= state->getMemoryValue(addr + i);
+        // value <<= 8;
+        // value |= state->getMemoryValue(addr + i);
+        hexdump += fmt::format("{:02X} ", state->getMemoryValue(addr + i));
       }
 
       dataWidth *= itemWidth;
 
       if (dataWidth <= 4) {
-        return fmt::format("0x{:04X}\t0x{:01X}\t", addr, value);
+        return fmt::format("0x{:04X}\t{}\t", addr, hexdump);
       } else if (dataWidth <= 8) {
-        return fmt::format("0x{:04X}\t0x{:02X}\t\t{}", addr, value, state->getMemoryDisassembly(addr));
+        return fmt::format("0x{:04X}\t{}\t\t{}", addr, hexdump, state->getMemoryDisassembly(addr));
       } else if (dataWidth <= 16) {
-        return fmt::format("0x{:04X}\t0x{:04X}\t", addr, value);
+        return fmt::format("0x{:04X}\t{}\t", addr, hexdump);
       } else if (dataWidth <= 32) {
-        return fmt::format("0x{:04X}\t0x{:08X}\t\t{}", addr, value, state->getMemoryDisassembly(addr));
+        return fmt::format("0x{:04X}\t{}\t\t{}", addr, hexdump, state->getMemoryDisassembly(addr));
       } else {
-        return fmt::format("0x{:04X}\t0x{:016X}\t", addr, value);
+        return fmt::format("0x{:04X}\t{}}\t", addr, hexdump);
       }
     }
   }
@@ -81,4 +83,12 @@ QVariant TLEmuMemoryModel::data(const QModelIndex &index, int role) const {
 
 void TLEmuMemoryModel::memoryChanged() {
   emit dataChanged(index(0), index(rowCount(QModelIndex()) - 1));
+}
+
+void TLEmuMemoryModel::setBaseAddress(uint64_t p) {
+  baseAddress = p;
+}
+
+uint64_t TLEmuMemoryModel::getBaseAddress() {
+  return baseAddress;
 }

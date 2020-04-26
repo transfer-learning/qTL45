@@ -25,10 +25,10 @@ LONG WINAPI PageFaultExceptionFilter(EXCEPTION_POINTERS *ExceptionInfo) {
   }
 
   LPVOID FaultAddress = (LPVOID) ExceptionInfo->ExceptionRecord->ExceptionInformation[1];
-  printf("fault at %p\n", FaultAddress);
+  // printf("fault at %p\n", FaultAddress);
   if (FaultAddress >= state.state.memory
     && FaultAddress <= (LPVOID) ((uintptr_t) state.state.memory + std::numeric_limits<uint32_t>::max())) {
-    printf("committing %p\n", FaultAddress);
+    // printf("committing %p\n", FaultAddress);
     VirtualAlloc(FaultAddress, 1, MEM_COMMIT, PAGE_READWRITE);
     return EXCEPTION_CONTINUE_EXECUTION;
   }

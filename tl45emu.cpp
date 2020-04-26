@@ -1,6 +1,7 @@
 #include <iostream>
 #include <QShortcut>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QInputDialog>
 #include "tl45emu.h"
 #include "./ui_tl45emu.h"
 
@@ -20,6 +21,10 @@ TLEmulator::TLEmulator(AbstractEmulatorState *state, QWidget *parent)
   auto *openFile = new QAction("Load File", this);
   connect(openFile, &QAction::triggered, this, &TLEmulator::onMenuItemClick);
   this->ui->toolBar->addAction(openFile);
+
+  auto *gotoAction = new QAction("Go to", this);
+  connect(gotoAction, &QAction::triggered, this, &TLEmulator::gotoMemoryClick);
+  this->ui->toolBar->addAction(gotoAction);
 
   auto *step = new QAction("Step", this);
 
@@ -67,5 +72,16 @@ void TLEmulator::onMenuItemClick(bool checked) {
   QString filename = QFileDialog::getOpenFileName(this, tr("Open Binary File"), "",
           tr("All Files (*)"));
   machine_state->load(filename.toStdString());
+}
+
+void TLEmulator::gotoMemoryClick(bool checked) {
+  bool ok;
+  QString addr = QInputDialog::getText(this, tr("Enter Address (hex)"), "",
+          QLineEdit::Normal, "", &ok);
+  if (!ok) return;
+  int32_t i = addr.toInt(&ok, 16);
+  if (!ok) return;
+  printf("goto %x\n", i);
+  this->memoryModel->setBaseAddress(i);
 }
 

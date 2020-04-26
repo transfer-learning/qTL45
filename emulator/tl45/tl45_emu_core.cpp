@@ -328,6 +328,10 @@ void tick(tl45_state *state) {
         state->write_reg(instr.DR, value_read);
       }
 
+      if (!is_read && addr == 0x696969) {
+        printf("%p: %08x\n", state->pc - 4, value_to_write);
+      }
+
       break;
     }
 
@@ -358,6 +362,7 @@ void tick(tl45_state *state) {
       break;
     }
     default:
+      state->pc -= 4;
       break; // DECODE ERROR
   }
 }

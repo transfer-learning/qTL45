@@ -19,6 +19,8 @@ public:
   QModelIndex indexAddress() const;
 
   void memoryChanged();
+  void setBaseAddress(uint64_t p);
+  uint64_t getBaseAddress();
 private:
   AbstractEmulatorState* state;
   uint64_t baseAddress;

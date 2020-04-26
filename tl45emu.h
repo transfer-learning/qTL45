@@ -20,6 +20,7 @@ public:
   ~TLEmulator();
 public slots:
   void onMenuItemClick(bool checked);
+  void gotoMemoryClick(bool checked);
 private:
 
   Ui::TLEmulator *ui;

@@ -14,7 +14,7 @@
 #endif
 
 uint16_t TL45EmulatorState::getRegisterCount() {
-  return 16+4;
+  return 16+5;
 }
 
 std::string TL45EmulatorState::getRegisterName(uint16_t regID) {
@@ -30,6 +30,8 @@ std::string TL45EmulatorState::getRegisterName(uint16_t regID) {
       return "OF";
     case 19:
       return "CF";
+    case 20:
+      return "PC";
     default:
       break;
   }
@@ -37,7 +39,8 @@ std::string TL45EmulatorState::getRegisterName(uint16_t regID) {
 }
 
 uint16_t TL45EmulatorState::getRegisterBitSize(uint16_t regID) {
-  if (regID >= 16) return 1;
+  if (regID == 16 || regID == 17 || regID == 18 || regID == 19) return 1;
+  if (regID == 20) return 32;
   return 32;
 }
 
@@ -57,6 +60,8 @@ uint64_t TL45EmulatorState::getRegisterValue(uint64_t regID) {
       return state.flags.of;
     case 19:
       return state.flags.cf;
+    case 20:
+      return state.pc;
     default:
       break;
   }
