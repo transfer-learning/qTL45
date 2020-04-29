@@ -2,6 +2,7 @@
 // Created by codetector on 12/3/19.
 //
 
+#include <limits>
 #include <stdexcept>
 #include "TL45EmulatorState.h"
 #include "tl45_isa.h"
