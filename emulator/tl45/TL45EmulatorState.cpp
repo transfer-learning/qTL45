@@ -4,6 +4,7 @@
 
 #include <limits>
 #include <stdexcept>
+#include <mutex>
 #include "TL45EmulatorState.h"
 #include "tl45_isa.h"
 #ifdef _WIN32
@@ -13,6 +14,52 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #endif
+
+static std::mutex g_mutex; // we lock on anything that may affect memory.
+static TL45EmulatorState* g_pState;
+
+#ifdef _WIN32
+// Lazy paging
+LONG WINAPI PageFaultExceptionFilter(EXCEPTION_POINTERS *ExceptionInfo) {
+  if (ExceptionInfo->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION) {
+    return EXCEPTION_CONTINUE_SEARCH;
+  }
+
+  // the faulting code should have g_mutex locked!
+	if (!g_pState || !g_pState->getRawMemoryPtr()) {
+		return EXCEPTION_CONTINUE_SEARCH;
+	}
+
+  LPVOID FaultAddress = (LPVOID) ExceptionInfo->ExceptionRecord->ExceptionInformation[1];
+  // printf("fault at %p\n", FaultAddress);
+	LPVOID memory_start = g_pState->getRawMemoryPtr();
+	LPVOID memory_end = (LPVOID)((uintptr_t)memory_start + std::numeric_limits<uint32_t>::max());
+  if (FaultAddress >= memory_start && FaultAddress <= memory_end) {
+    if (g_mutex.try_lock()) {
+      printf("faulting instruction: %p\n", (void*) ExceptionInfo->ContextRecord->Rip);
+      throw std::runtime_error("faulting code did not have the global state mutex locked");
+    }
+    // printf("committing %p\n", FaultAddress);
+    VirtualAlloc(FaultAddress, 1, MEM_COMMIT, PAGE_READWRITE);
+    return EXCEPTION_CONTINUE_EXECUTION;
+  }
+
+  return EXCEPTION_CONTINUE_SEARCH;
+}
+#endif
+
+TL45EmulatorState::TL45EmulatorState() : state() {
+  const std::unique_lock<std::mutex> lock(g_mutex);
+  if (g_pState) {
+    printf("TL45EmulatorState singleton already initialized");
+    abort();
+  }
+  g_pState = this;
+#ifdef _WIN32
+  AddVectoredExceptionHandler(FALSE, PageFaultExceptionFilter);
+#endif
+}
+
 
 uint16_t TL45EmulatorState::getRegisterCount() {
   return 16+5;
@@ -85,26 +132,38 @@ MemoryMapping TL45EmulatorState::getMemoryMapping(uint64_t addr) {
   return MemoryMapping::STANDARD_MEMORY;
 }
 
-uint64_t TL45EmulatorState::getMemoryValue(uint64_t addr) {
-  return state.memory[addr];
+void TL45EmulatorState::readMemory(uint64_t addr, size_t n, void* data) {
+  const std::unique_lock<std::mutex> lock(g_mutex);
+  memcpy(data, &state.memory[addr], n);
 }
 
-void TL45EmulatorState::setMemoryValue(uint64_t addr, uint64_t data) {
-  throw std::runtime_error("not implemented");
+void TL45EmulatorState::writeMemory(uint64_t addr, size_t n, void* data) {
+  const std::unique_lock<std::mutex> lock(g_mutex);
+  memcpy(&state.memory[addr], data, n);
 }
 
 std::string TL45EmulatorState::getMemoryDisassembly(uint64_t &addr) {
+  const std::unique_lock<std::mutex> lock(g_mutex);
   if (addr % 4 == 0) {
-    return TL45::disassemble(state.read_word(addr).value);
+    return TL45::disassemble(state.read_word((uint32_t) addr).value);
   }
   return "";
 }
 
 void TL45EmulatorState::step() {
+  const std::unique_lock<std::mutex> lock(g_mutex);
   TL45::tick(&state);
 }
 
+void TL45EmulatorState::run() {
+  const std::unique_lock<std::mutex> lock(g_mutex);
+  do {
+    TL45::tick(&state);
+  } while (state.fetch_instruction(state.pc) != 0xffffffff);
+}
+
 void TL45EmulatorState::clear() {
+  const std::unique_lock<std::mutex> lock(g_mutex);
 #ifdef _WIN32
   VirtualFree(this->state.memory, 0, MEM_RELEASE);
   state.memory = (uint8_t *) VirtualAlloc(nullptr, std::numeric_limits<uint32_t>::max(),
@@ -141,7 +200,7 @@ void TL45EmulatorState::clear() {
 }
 
 int TL45EmulatorState::load(std::string fileName) {
-  this->clear();
+  const std::unique_lock<std::mutex> lock(g_mutex);
   FILE *f = fopen(fileName.c_str(), "rb");
   if (!f) {
     return -1;
@@ -160,6 +219,7 @@ int TL45EmulatorState::load(std::string fileName) {
 }
 
 void* TL45EmulatorState::getRawMemoryPtr() const {
+  // THIS IS NOT LOCK SAFE!
 	return state.memory;
 }
 

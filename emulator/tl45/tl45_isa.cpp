@@ -11,7 +11,9 @@
 
 namespace TL45 {
 std::string disassemble(uint32_t instruction) {
-
+  if (instruction == 0xFFFFFFFF) {
+    return "BREAK";
+  }
   static const std::string OpNames[0x19] = {"NOP", "ADD", // 0x1
                                 "SUB", "MUL", "_NOP", // 0x4,
                                 "SHRA", "OR", "XOR", // 0x7

@@ -74,7 +74,7 @@ void TL45::tick(tl45_state *state) {
 			state->write_reg(instr.DR, result);
 
     	uint64_t val1 = (uint64_t)cell1.value;
-	    uint64_t val2 = -(uint64_t)cell2.value & 0x1FFFFFFFF;
+	    uint64_t val2 = -(int64_t)cell2.value & 0x1FFFFFFFF;
       uint64_t long_result = val1 + val2;
     	tl45_flags new_flags;
       new_flags.of = (sign_bit(val1) == sign_bit(val2) && sign_bit(val1) != sign_bit(long_result));
@@ -165,19 +165,6 @@ void TL45::tick(tl45_state *state) {
     {
 			cell<tl45_flags> flags_cell = state->read_flags();
 			tl45_flags flags = flags_cell.value;
-
-    	// update profiling info
-			uint32_t instr_addr = state->pc - 4;
-			state->profile.branch_count[instr_addr]++;
-			state->profile.branch_taint[instr_addr].insert(flags_cell.taint.set.begin(), flags_cell.taint.set.end());
-			//if (instr_addr != 0x08 && flags_cell.taint.set.size() > 0) {
-			//	printf("branch %08x tainted by: ", state->pc);
-			//	for (uint32_t x : flags_cell.taint.set) {
-			//		printf("%u ", x);
-			//	}
-			//	printf("\n");
-			//}
-    	
       bool do_jump;
       switch (instr.DR) {
         case 0:
@@ -225,6 +212,12 @@ void TL45::tick(tl45_state *state) {
         default:
           do_jump = true; // jmp
       }
+
+      // update profiling info
+			uint32_t instr_addr = state->pc - 4;
+			state->profile.branch_count[{instr_addr, do_jump}]++;
+			state->profile.branch_taint[{instr_addr, do_jump}].insert(flags_cell.taint.set.begin(), flags_cell.taint.set.end());
+
       if (do_jump) {
         uint32_t target_address = state->read_reg(instr.SR1).value + ((int32_t) (int16_t) instr.raw_imm); // SR1 + SEXT IMM
         state->pc = target_address;

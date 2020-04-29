@@ -21,7 +21,9 @@ std::string TLEmuMemoryModel::formatMemoryValue(uint64_t addr) const {
       for (int i = 0; i < itemWidth; i++) {
         // value <<= 8;
         // value |= state->getMemoryValue(addr + i);
-        hexdump += fmt::format("{:02X} ", state->getMemoryValue(addr + i));
+        uint8_t b;
+        state->readMemory(addr + i, sizeof(b), &b);
+        hexdump += fmt::format("{:02X} ", b);
       }
 
       dataWidth *= itemWidth;

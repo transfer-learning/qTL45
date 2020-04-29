@@ -8,6 +8,9 @@
 #ifndef TL45_EMU_TL45_EMU_CORE_H
 #define TL45_EMU_TL45_EMU_CORE_H
 
+#define INPUT_TAINT_START 0x100000
+#define INPUT_TAINT_END 0x200000
+
 class TL45EmulatorState;
 
 namespace TL45 {
@@ -247,6 +250,17 @@ struct tl45_flags {
   uint8_t of:1;
 };
 
+typedef std::pair<uint32_t, bool> branch;
+
+struct pair_hash
+{
+	template <class T1, class T2>
+	std::size_t operator() (const std::pair<T1, T2> &pair) const
+	{
+		return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
+	}
+};
+
 class tl45_state {
   uint32_t registers[15];
   uint8_t *memory;
@@ -261,8 +275,8 @@ class tl45_state {
 	friend class ::TL45EmulatorState;
 public:
 	struct {
-		std::unordered_map<uint32_t, int32_t> branch_count;
-		std::unordered_map<uint32_t, std::unordered_set<int32_t>> branch_taint;
+		std::unordered_map<branch, int32_t, pair_hash> branch_count;
+		std::unordered_map<branch, std::unordered_set<int32_t>, pair_hash> branch_taint;
 	} profile;
 	
   uint32_t pc;
@@ -294,14 +308,14 @@ public:
 	void write_byte(uint32_t addr, cell<uint8_t> cell) {
 		memory[addr] = cell.value;
 		taint.memory[addr] = cell.taint;
-  	if (addr >= 0x100000 && addr < 0x200000) {
-			taint.memory[addr].set.insert(addr - 0x100000);
+  	if (addr >= INPUT_TAINT_START && addr < INPUT_TAINT_END) {
+			taint.memory[addr].set.insert(addr - INPUT_TAINT_START);
   	}
 	}
 
   cell<uint8_t> read_byte(uint32_t addr) {
-  	if (addr >= 0x100000 && addr < 0x200000) {
-			taint.memory[addr].set.insert(addr - 0x100000);
+  	if (addr >= INPUT_TAINT_START && addr < INPUT_TAINT_END) {
+			taint.memory[addr].set.insert(addr - INPUT_TAINT_START);
   	}
     return cell<uint8_t>{memory[addr], taint.memory[addr]};
   }

@@ -20,6 +20,8 @@ class TL45EmulatorState : public AbstractEmulatorState {
   uint64_t getProgramCounterValue() override;
 
 public:
+  TL45EmulatorState();
+	
   void clear() override;
 
   int load(std::string fileName) override;
@@ -28,6 +30,8 @@ public:
   TL45::tl45_state state;
 
   void step() override;
+	
+  void run() override;
 
   uint16_t getRegisterBitSize(uint16_t regID) override;
 
@@ -37,9 +41,9 @@ public:
 
   MemoryMapping getMemoryMapping(uint64_t addr) override;
 
-  uint64_t getMemoryValue(uint64_t addr) override;
+  void readMemory(uint64_t addr, size_t n, void* data) override;
 
-  void setMemoryValue(uint64_t addr, uint64_t data) override;
+  void writeMemory(uint64_t addr, size_t n, void* data) override;
 
   std::string getMemoryDisassembly(uint64_t &addr) override;
 
