@@ -26,14 +26,14 @@ LONG WINAPI PageFaultExceptionFilter(EXCEPTION_POINTERS *ExceptionInfo) {
   }
 
   // the faulting code should have g_mutex locked!
-	if (!g_pState || !g_pState->getRawMemoryPtr()) {
-		return EXCEPTION_CONTINUE_SEARCH;
-	}
+  if (!g_pState || !g_pState->getRawMemoryPtr()) {
+    return EXCEPTION_CONTINUE_SEARCH;
+  }
 
   LPVOID FaultAddress = (LPVOID) ExceptionInfo->ExceptionRecord->ExceptionInformation[1];
   // printf("fault at %p\n", FaultAddress);
-	LPVOID memory_start = g_pState->getRawMemoryPtr();
-	LPVOID memory_end = (LPVOID)((uintptr_t)memory_start + std::numeric_limits<uint32_t>::max());
+  LPVOID memory_start = g_pState->getRawMemoryPtr();
+  LPVOID memory_end = (LPVOID)((uintptr_t)memory_start + std::numeric_limits<uint32_t>::max());
   if (FaultAddress >= memory_start && FaultAddress <= memory_end) {
     if (g_mutex.try_lock()) {
       printf("faulting instruction: %p\n", (void*) ExceptionInfo->ContextRecord->Rip);
@@ -174,10 +174,10 @@ void TL45EmulatorState::clear() {
   state.memory = (uint8_t *) mmap(nullptr, std::numeric_limits<uint32_t>::max(),
                                         PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_NORESERVE, 0, 0);
 #endif
-	if (!state.memory) {
-		printf("Failed to allocate memory!\n");
-		exit(1);
-	}
+  if (!state.memory) {
+    printf("Failed to allocate memory!\n");
+    exit(1);
+  }
   for (int i = 0; i < 15; ++i) {
     state.registers[i] = 0;
   }
@@ -192,11 +192,11 @@ void TL45EmulatorState::clear() {
   for (int i = 0; i < 15; ++i) {
     state.taint.registers[i].clear();
   }
-	state.taint.flags.clear();
+  state.taint.flags.clear();
 
-	// clear profiling
-	state.profile.branch_count.clear();
-	state.profile.branch_taint.clear();
+  // clear profiling
+  state.profile.branch_count.clear();
+  state.profile.branch_taint.clear();
 }
 
 int TL45EmulatorState::load(std::string fileName) {
@@ -220,6 +220,6 @@ int TL45EmulatorState::load(std::string fileName) {
 
 void* TL45EmulatorState::getRawMemoryPtr() const {
   // THIS IS NOT LOCK SAFE!
-	return state.memory;
+  return state.memory;
 }
 

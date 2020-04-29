@@ -61,7 +61,7 @@ struct cell_taint {
 
   cell_taint() {
   }
-	
+  
   cell_taint(const cell_taint& other) : set(other.set) {
   }
 
@@ -69,11 +69,11 @@ struct cell_taint {
   }
 
   cell_taint operator|(const cell_taint& other) const {
-		cell_taint result(*this);
-		result |= other;
-		return result;
+    cell_taint result(*this);
+    result |= other;
+    return result;
   }
-	
+  
   cell_taint& operator|=(const cell_taint& other) {
     set.insert(other.set.begin(), other.set.end());
     return *this;
@@ -86,7 +86,7 @@ struct cell_taint {
 
   cell_taint& operator=(const cell_taint&& other) {
     set = std::move(other.set);
-  	return *this;
+    return *this;
   }
 };
 
@@ -105,139 +105,139 @@ struct cell {
   cell<T>& operator+=(const cell<U>& rhs) {
     value += rhs.value;
     taint |= rhs.taint;
-  	return *this;
+    return *this;
   }
 
   template<typename U>
   cell<T>& operator-=(const cell<U>& rhs) {
     value -= rhs.value;
     taint |= rhs.taint;
-  	return *this;
+    return *this;
   }
 
   template<typename U>
   cell<T>& operator*=(const cell<U>& rhs) {
     value *= rhs.value;
     taint |= rhs.taint;
-  	return *this;
+    return *this;
   }
 
   template<typename U>
   cell<T>& operator/=(const cell<U>& rhs) {
     value /= rhs.value;
     taint |= rhs.taint;
-  	return *this;
+    return *this;
   }
 
   template<typename U>
   cell<T>& operator&=(const cell<U>& rhs) {
     value &= rhs.value;
     taint |= rhs.taint;
-  	return *this;
+    return *this;
   }
 
   template<typename U>
   cell<T>& operator^=(const cell<U>& rhs) {
     value ^= rhs.value;
     taint |= rhs.taint;
-  	return *this;
+    return *this;
   }
 
   template<typename U>
   cell<T>& operator|=(const cell<U>& rhs) {
     value |= rhs.value;
     taint |= rhs.taint;
-		return *this;
+    return *this;
   }
 
-	template<typename U>
+  template<typename U>
   cell<T>& operator<<=(const cell<U>& rhs) {
     value <<= rhs.value;
     taint |= rhs.taint;
-  	return *this;
+    return *this;
   }
 
-	template<typename U>
+  template<typename U>
   cell<T>& operator>>=(const cell<U>& rhs) {
     value >>= rhs.value;
     taint |= rhs.taint;
-  	return *this;
+    return *this;
   }
 
-	template<typename U>
-	cell<T> operator+(const cell<U>& rhs) const {
-		return cell<T>(value + rhs.value, taint | rhs.taint);
-	}
+  template<typename U>
+  cell<T> operator+(const cell<U>& rhs) const {
+    return cell<T>(value + rhs.value, taint | rhs.taint);
+  }
 
-	template<typename U>
-	cell<T> operator-(const cell<U>& rhs) const {
-		return cell<T>(value - rhs.value, taint | rhs.taint);
-	}
+  template<typename U>
+  cell<T> operator-(const cell<U>& rhs) const {
+    return cell<T>(value - rhs.value, taint | rhs.taint);
+  }
 
-	template<typename U>
-	cell<T> operator*(const cell<U>& rhs) const {
-		return cell<T>(value * rhs.value, taint | rhs.taint);
-	}
+  template<typename U>
+  cell<T> operator*(const cell<U>& rhs) const {
+    return cell<T>(value * rhs.value, taint | rhs.taint);
+  }
 
-	template<typename U>
-	cell<T> operator/(const cell<U>& rhs) const {
-		return cell<T>(value / rhs.value, taint | rhs.taint);
-	}
+  template<typename U>
+  cell<T> operator/(const cell<U>& rhs) const {
+    return cell<T>(value / rhs.value, taint | rhs.taint);
+  }
 
-	template<typename U>
-	cell<T> operator&(const cell<U>& rhs) const {
-		return cell<T>(value & rhs.value, taint | rhs.taint);
-	}
+  template<typename U>
+  cell<T> operator&(const cell<U>& rhs) const {
+    return cell<T>(value & rhs.value, taint | rhs.taint);
+  }
 
-	template<typename U>
-	cell<T> operator^(const cell<U>& rhs) const {
-		return cell<T>(value ^ rhs.value, taint | rhs.taint);
-	}
+  template<typename U>
+  cell<T> operator^(const cell<U>& rhs) const {
+    return cell<T>(value ^ rhs.value, taint | rhs.taint);
+  }
 
-	template<typename U>
-	cell<T> operator|(const cell<U>& rhs) const {
-		return cell<T>(value | rhs.value, taint | rhs.taint);
-	}
+  template<typename U>
+  cell<T> operator|(const cell<U>& rhs) const {
+    return cell<T>(value | rhs.value, taint | rhs.taint);
+  }
 
-	template<typename U>
-	cell<T> operator<<(const cell<U>& rhs) const {
-		return cell<T>(value << rhs.value, taint | rhs.taint);
-	}
+  template<typename U>
+  cell<T> operator<<(const cell<U>& rhs) const {
+    return cell<T>(value << rhs.value, taint | rhs.taint);
+  }
 
-	template<typename U>
-	cell<T> operator>>(const cell<U>& rhs) const {
-		return cell<T>(value >> rhs.value, taint | rhs.taint);
-	}
+  template<typename U>
+  cell<T> operator>>(const cell<U>& rhs) const {
+    return cell<T>(value >> rhs.value, taint | rhs.taint);
+  }
 
   cell<T>& operator<<=(uint8_t scalar) {
     value <<= scalar;
-  	return *this;
+    return *this;
   }
 
   cell<T>& operator>>=(uint8_t scalar) {
     value >>= scalar;
-  	return *this;
+    return *this;
   }
 
-	cell<T> operator<<(T scalar) const {
-		return cell<T>(value << scalar, taint);
-	}
+  cell<T> operator<<(T scalar) const {
+    return cell<T>(value << scalar, taint);
+  }
 
-	cell<T> operator>>(T scalar) const {
-		return cell<T>(value >> scalar, taint);
-	}
+  cell<T> operator>>(T scalar) const {
+    return cell<T>(value >> scalar, taint);
+  }
 
-	cell<T> operator&(T scalar) const {
-		return cell<T>(value & scalar, taint);
-	}
+  cell<T> operator&(T scalar) const {
+    return cell<T>(value & scalar, taint);
+  }
 
-	cell<T> operator~() const {
-		return cell<T>(~value, taint);
-	}
+  cell<T> operator~() const {
+    return cell<T>(~value, taint);
+  }
 
-	template<typename U>
-	operator cell<U>() const {
-		return cell<U>((U) value, taint);
+  template<typename U>
+  operator cell<U>() const {
+    return cell<U>((U) value, taint);
   }
 };
 
@@ -254,31 +254,31 @@ typedef std::pair<uint32_t, bool> branch;
 
 struct pair_hash
 {
-	template <class T1, class T2>
-	std::size_t operator() (const std::pair<T1, T2> &pair) const
-	{
-		return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
-	}
+  template <class T1, class T2>
+  std::size_t operator() (const std::pair<T1, T2> &pair) const
+  {
+    return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
+  }
 };
 
 class tl45_state {
   uint32_t registers[15];
   uint8_t *memory;
-	tl45_flags flags;
+  tl45_flags flags;
 
   struct {
     cell_taint registers[15];
-		cell_taint flags;
+    cell_taint flags;
     std::unordered_map<uint32_t, cell_taint> memory;
   } taint;
 
-	friend class ::TL45EmulatorState;
+  friend class ::TL45EmulatorState;
 public:
-	struct {
-		std::unordered_map<branch, int32_t, pair_hash> branch_count;
-		std::unordered_map<branch, std::unordered_set<int32_t>, pair_hash> branch_taint;
-	} profile;
-	
+  struct {
+    std::unordered_map<branch, int32_t, pair_hash> branch_count;
+    std::unordered_map<branch, std::unordered_set<int32_t>, pair_hash> branch_taint;
+  } profile;
+  
   uint32_t pc;
   size_t max_memory_length; // must be multiple of 4
 
@@ -296,69 +296,69 @@ public:
     return regcell( registers[reg - 1], taint.registers[reg - 1] );
   }
 
-	void write_flags(cell<tl45_flags> cell) {
-		flags = cell.value;
-		taint.flags = cell.taint;
+  void write_flags(cell<tl45_flags> cell) {
+    flags = cell.value;
+    taint.flags = cell.taint;
   }
-	
-	cell<tl45_flags> read_flags() const {
-		return cell<tl45_flags>(flags, taint.flags);
+  
+  cell<tl45_flags> read_flags() const {
+    return cell<tl45_flags>(flags, taint.flags);
   }
-	
-	void write_byte(uint32_t addr, cell<uint8_t> cell) {
-		memory[addr] = cell.value;
-		taint.memory[addr] = cell.taint;
-  	if (addr >= INPUT_TAINT_START && addr < INPUT_TAINT_END) {
-			taint.memory[addr].set.insert(addr - INPUT_TAINT_START);
-  	}
-	}
+  
+  void write_byte(uint32_t addr, cell<uint8_t> cell) {
+    memory[addr] = cell.value;
+    taint.memory[addr] = cell.taint;
+    if (addr >= INPUT_TAINT_START && addr < INPUT_TAINT_END) {
+      taint.memory[addr].set.insert(addr - INPUT_TAINT_START);
+    }
+  }
 
   cell<uint8_t> read_byte(uint32_t addr) {
-  	if (addr >= INPUT_TAINT_START && addr < INPUT_TAINT_END) {
-			taint.memory[addr].set.insert(addr - INPUT_TAINT_START);
-  	}
+    if (addr >= INPUT_TAINT_START && addr < INPUT_TAINT_END) {
+      taint.memory[addr].set.insert(addr - INPUT_TAINT_START);
+    }
     return cell<uint8_t>{memory[addr], taint.memory[addr]};
   }
 
   cell<uint16_t> read_halfword(uint32_t addr) {
-		return read_byte(addr) << 8 | read_byte(addr + 1);
+    return read_byte(addr) << 8 | read_byte(addr + 1);
   }
 
-	void write_halfword(uint32_t addr, cell<uint16_t> cell) {
-		write_byte(addr + 0, (cell & 0x0000ff00) >> 8);
-		write_byte(addr + 1, (cell & 0x000000ff) >> 0);
+  void write_halfword(uint32_t addr, cell<uint16_t> cell) {
+    write_byte(addr + 0, (cell & 0x0000ff00) >> 8);
+    write_byte(addr + 1, (cell & 0x000000ff) >> 0);
   }
-	
+  
   regcell read_word(uint32_t addr) {
     regcell result(0);
     result |= read_byte(addr);
-		result <<= 8;
-		result |= read_byte(addr + 1);
-		result <<= 8;
-		result |= read_byte(addr + 2);
-		result <<= 8;
-		result |= read_byte(addr +3);
+    result <<= 8;
+    result |= read_byte(addr + 1);
+    result <<= 8;
+    result |= read_byte(addr + 2);
+    result <<= 8;
+    result |= read_byte(addr +3);
     return result;
   }
 
-	void write_word(uint32_t addr, regcell cell) {
-		write_byte(addr + 0, (cell & 0xff000000) >> 24);
-		write_byte(addr + 1, (cell & 0x00ff0000) >> 16);
-		write_byte(addr + 2, (cell & 0x0000ff00) >> 8);
-		write_byte(addr + 3, (cell & 0x000000ff) >> 0);
+  void write_word(uint32_t addr, regcell cell) {
+    write_byte(addr + 0, (cell & 0xff000000) >> 24);
+    write_byte(addr + 1, (cell & 0x00ff0000) >> 16);
+    write_byte(addr + 2, (cell & 0x0000ff00) >> 8);
+    write_byte(addr + 3, (cell & 0x000000ff) >> 0);
   }
 
-	uint32_t fetch_instruction(uint32_t location) {
-	  uint32_t value = 0;
-	  for (int i = 0; i < 4; ++i) {
-	    value = (value << 8U) | memory[location + i];
-	  }
-	  return value;
+  uint32_t fetch_instruction(uint32_t location) {
+    uint32_t value = 0;
+    for (int i = 0; i < 4; ++i) {
+      value = (value << 8U) | memory[location + i];
+    }
+    return value;
   }
 };
 
 void tick(tl45_state *state);
 
 }
-	
+  
 #endif //TL45_EMU_TL45_EMU_CORE_H

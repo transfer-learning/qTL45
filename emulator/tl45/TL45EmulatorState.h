@@ -21,7 +21,7 @@ class TL45EmulatorState : public AbstractEmulatorState {
 
 public:
   TL45EmulatorState();
-	
+  
   void clear() override;
 
   int load(std::string fileName) override;
@@ -30,7 +30,7 @@ public:
   TL45::tl45_state state;
 
   void step() override;
-	
+  
   void run() override;
 
   uint16_t getRegisterBitSize(uint16_t regID) override;
@@ -47,7 +47,7 @@ public:
 
   std::string getMemoryDisassembly(uint64_t &addr) override;
 
-	void* getRawMemoryPtr() const override;
+  void* getRawMemoryPtr() const override;
 };
 
 

@@ -32,11 +32,11 @@ void TL45::tick(tl45_state *state) {
   DecodedInstruction instr{};
   if (!DecodedInstruction::decode(instruction, instr)) {
     // RIP
-		printf("%08x: Decode error\n", state->pc);
+    printf("%08x: Decode error\n", state->pc);
     return;
   }
 
-	state->pc += 4;
+  state->pc += 4;
   auto opcode = instr.opcode;
   switch (opcode) {
     case 0x0:
@@ -47,18 +47,18 @@ void TL45::tick(tl45_state *state) {
         cell2 = regcell(instr.decode_imm());
       }
       regcell cell1 = state->read_reg(instr.SR1);
-    	regcell result = cell1 + cell2;
+      regcell result = cell1 + cell2;
       state->write_reg(instr.DR, result);
 
-    	uint64_t val1 = (uint64_t)cell1.value;
-	    uint64_t val2 = (uint64_t)cell2.value;
+      uint64_t val1 = (uint64_t)cell1.value;
+      uint64_t val2 = (uint64_t)cell2.value;
       uint64_t long_result = val1 + val2;
-	    tl45_flags new_flags;
+      tl45_flags new_flags;
       new_flags.of = (sign_bit(val1) == sign_bit(val2) && sign_bit(val1) != sign_bit(long_result));
       new_flags.cf = (long_result >> 32u) & 1u;
       new_flags.zf = (uint32_t) long_result == 0;
       new_flags.sf = sign_bit(long_result);
-			state->write_flags(cell<tl45_flags>(new_flags, result.taint));
+      state->write_flags(cell<tl45_flags>(new_flags, result.taint));
       break;
     }
     case 0x2: { // SUB
@@ -66,22 +66,22 @@ void TL45::tick(tl45_state *state) {
       if (instr.RI) { // IMM Mode
         cell2 = regcell(instr.decode_imm());
       }
-    	regcell cell1 = state->read_reg(instr.SR1);
-			regcell result = cell1 - cell2;
-    	if (!instr.RI && instr.SR2 == instr.SR1) {
-				result.taint.clear(); // sub x,x zeroes taint
-    	}
-			state->write_reg(instr.DR, result);
+      regcell cell1 = state->read_reg(instr.SR1);
+      regcell result = cell1 - cell2;
+      if (!instr.RI && instr.SR2 == instr.SR1) {
+        result.taint.clear(); // sub x,x zeroes taint
+      }
+      state->write_reg(instr.DR, result);
 
-    	uint64_t val1 = (uint64_t)cell1.value;
-	    uint64_t val2 = -(int64_t)cell2.value & 0x1FFFFFFFF;
+      uint64_t val1 = (uint64_t)cell1.value;
+      uint64_t val2 = -(int64_t)cell2.value & 0x1FFFFFFFF;
       uint64_t long_result = val1 + val2;
-    	tl45_flags new_flags;
+      tl45_flags new_flags;
       new_flags.of = (sign_bit(val1) == sign_bit(val2) && sign_bit(val1) != sign_bit(long_result));
       new_flags.cf = (long_result >> 32u) & 1u;
       new_flags.zf = (uint32_t) long_result == 0;
       new_flags.sf = sign_bit(long_result);
-    	state->write_flags(cell<tl45_flags>(new_flags, result.taint));
+      state->write_flags(cell<tl45_flags>(new_flags, result.taint));
       break;
     }
     case 0x3: { // MUL
@@ -90,7 +90,7 @@ void TL45::tick(tl45_state *state) {
         cell2 = regcell(instr.decode_imm());
       }
       regcell cell1 = state->read_reg(instr.SR1);
-    	regcell result = cell1 * cell2;
+      regcell result = cell1 * cell2;
       state->write_reg(instr.DR, result);
       break;
     }
@@ -110,15 +110,15 @@ void TL45::tick(tl45_state *state) {
           break;
         case 0x7:
           result = cell1 ^ cell2;
-					if (!instr.RI && instr.SR2 == instr.SR1) {
-						result.taint.clear(); // xor x,x zeroes taint
-    			}
+          if (!instr.RI && instr.SR2 == instr.SR1) {
+            result.taint.clear(); // xor x,x zeroes taint
+          }
           break;
         case 0x8:
           result = cell1 & cell2;
-      		if (instr.RI && cell2.value == 0) {
-						result.taint.clear(); // and x,imm0 zeroes taint
-    			}
+          if (instr.RI && cell2.value == 0) {
+            result.taint.clear(); // and x,imm0 zeroes taint
+          }
           break;
         case 0x9:
           result = ~cell1;
@@ -128,12 +128,12 @@ void TL45::tick(tl45_state *state) {
       }
       state->write_reg(instr.DR, result);
 
-    	tl45_flags new_flags;
+      tl45_flags new_flags;
       new_flags.of = 0;
       new_flags.cf = 0;
       new_flags.zf = result.value == 0;
       new_flags.sf = sign_bit(result.value);
-    	state->write_flags(cell<tl45_flags>(new_flags, result.taint));
+      state->write_flags(cell<tl45_flags>(new_flags, result.taint));
       break;
     }
     case 0xA: // SHL
@@ -163,8 +163,8 @@ void TL45::tick(tl45_state *state) {
     }
     case 0xC: // JUMPS
     {
-			cell<tl45_flags> flags_cell = state->read_flags();
-			tl45_flags flags = flags_cell.value;
+      cell<tl45_flags> flags_cell = state->read_flags();
+      tl45_flags flags = flags_cell.value;
       bool do_jump;
       switch (instr.DR) {
         case 0:
@@ -214,9 +214,9 @@ void TL45::tick(tl45_state *state) {
       }
 
       // update profiling info
-			uint32_t instr_addr = state->pc - 4;
-			state->profile.branch_count[{instr_addr, do_jump}]++;
-			state->profile.branch_taint[{instr_addr, do_jump}].insert(flags_cell.taint.set.begin(), flags_cell.taint.set.end());
+      uint32_t instr_addr = state->pc - 4;
+      state->profile.branch_count[{instr_addr, do_jump}]++;
+      state->profile.branch_taint[{instr_addr, do_jump}].insert(flags_cell.taint.set.begin(), flags_cell.taint.set.end());
 
       if (do_jump) {
         uint32_t target_address = state->read_reg(instr.SR1).value + ((int32_t) (int16_t) instr.raw_imm); // SR1 + SEXT IMM
@@ -227,16 +227,16 @@ void TL45::tick(tl45_state *state) {
     case 0xD: { // CALL
       uint32_t addr = state->read_reg(instr.SR1).value + (int32_t) (int16_t) instr.raw_imm;
       regcell decr_sp = state->read_reg(instr.DR);
-			decr_sp.value -= 4;
+      decr_sp.value -= 4;
       state->write_reg(instr.DR, decr_sp);
-			state->write_word(decr_sp.value, regcell(state->pc)); // we assume pc has no taint
+      state->write_word(decr_sp.value, regcell(state->pc)); // we assume pc has no taint
       state->pc = addr;
       break;
     }
     case 0xE: { // RET
       regcell incr_sp = state->read_reg(instr.DR);
-			state->pc = state->read_word(incr_sp.value).value;
-			incr_sp.value += 4;
+      state->pc = state->read_word(incr_sp.value).value;
+      incr_sp.value += 4;
       state->write_reg(instr.DR, incr_sp);
       break;
     }
@@ -253,7 +253,7 @@ void TL45::tick(tl45_state *state) {
       regcell value_to_write = state->read_reg(instr.DR);
       regcell value_read = regcell(0);
       bool is_read = false;
-			//printf("access to %08x\n", addr);
+      //printf("access to %08x\n", addr);
 
       switch (opcode) {
         case 0x10: // LHW
@@ -268,7 +268,7 @@ void TL45::tick(tl45_state *state) {
           break;
         }
         case 0x16: { // SHW
-					state->write_halfword(addr, (cell<uint16_t>) value_to_write);
+          state->write_halfword(addr, (cell<uint16_t>) value_to_write);
           break;
         }
         case 0x0F: // LBSE
@@ -283,7 +283,7 @@ void TL45::tick(tl45_state *state) {
           break;
         }
         case 0x13: { // SB
-					state->write_byte(addr, (cell<uint8_t>) value_to_write);
+          state->write_byte(addr, (cell<uint8_t>) value_to_write);
           break;
         }
         case 0x14: { // LW
@@ -292,7 +292,7 @@ void TL45::tick(tl45_state *state) {
           break;
         }
         case 0x15: { // SW
-					state->write_word(addr, value_to_write);
+          state->write_word(addr, value_to_write);
           break;
         }
         default:
@@ -332,8 +332,8 @@ void TL45::tick(tl45_state *state) {
       break;
     }
     default:
-  		printf("%08x: Decode error\n", state->pc);
-			state->pc -= 4;
+      printf("%08x: Decode error\n", state->pc);
+      state->pc -= 4;
       break; // DECODE ERROR
   }
 }

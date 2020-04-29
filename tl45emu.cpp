@@ -69,29 +69,29 @@ TLEmulator::TLEmulator(TL45EmulatorState *state, QWidget *parent)
   }
 
   {
-	  auto *printProfile = new QAction("Print Profile", this);
+    auto *printProfile = new QAction("Print Profile", this);
 
     connect(printProfile, &QAction::triggered, this, [=](bool checked) {
-    	// display profiling info
-    	std::vector<TL45::branch> branches;
-			auto& profile = state->state.profile;
-    	for (auto it = profile.branch_count.begin(); it != profile.branch_count.end(); ++it) {
-				branches.push_back(it->first);
-    	}
-			std::sort(branches.begin(), branches.end(), [&profile](const auto& a, const auto& b) -> bool { 
-				return profile.branch_count[a] < profile.branch_count[b]; // we want sort in descending order
-			});
-    	printf("top branch report:\n");
-    	for (int i = 0; i < 200 && i < branches.size(); i++) {
-				auto& taint_set = profile.branch_taint[branches[i]];
-				if (taint_set.size() == 0)
-					continue;
-				printf("%08x:%c | %08x hits, tainted by: ", branches[i].first, branches[i].second ? 't': 'f', profile.branch_count[branches[i]]);
-				for (uint32_t x : taint_set) {
-					printf("%u ", x);
-				}
-				printf("\n");
-    	}
+      // display profiling info
+      std::vector<TL45::branch> branches;
+      auto& profile = state->state.profile;
+      for (auto it = profile.branch_count.begin(); it != profile.branch_count.end(); ++it) {
+        branches.push_back(it->first);
+      }
+      std::sort(branches.begin(), branches.end(), [&profile](const auto& a, const auto& b) -> bool { 
+        return profile.branch_count[a] < profile.branch_count[b]; // we want sort in descending order
+      });
+      printf("top branch report:\n");
+      for (int i = 0; i < 200 && i < branches.size(); i++) {
+        auto& taint_set = profile.branch_taint[branches[i]];
+        if (taint_set.size() == 0)
+          continue;
+        printf("%08x:%c | %08x hits, tainted by: ", branches[i].first, branches[i].second ? 't': 'f', profile.branch_count[branches[i]]);
+        for (uint32_t x : taint_set) {
+          printf("%u ", x);
+        }
+        printf("\n");
+      }
     });
 
     this->ui->toolBar->addAction(printProfile);
