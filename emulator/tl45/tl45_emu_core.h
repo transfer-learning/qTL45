@@ -305,47 +305,49 @@ public:
     return cell<tl45_flags>(flags, taint.flags);
   }
   
-  void write_byte(uint32_t addr, cell<uint8_t> cell) {
+  void write_byte(regcell dst, cell<uint8_t> cell) {
+    uint32_t addr = dst.value;
     memory[addr] = cell.value;
-    taint.memory[addr] = cell.taint;
+    taint.memory[addr] = cell.taint | dst.taint;
     if (addr >= INPUT_TAINT_START && addr < INPUT_TAINT_END) {
       taint.memory[addr].set.insert(addr - INPUT_TAINT_START);
     }
   }
 
-  cell<uint8_t> read_byte(uint32_t addr) {
+  cell<uint8_t> read_byte(regcell src) {
+    uint32_t addr = src.value;
     if (addr >= INPUT_TAINT_START && addr < INPUT_TAINT_END) {
       taint.memory[addr].set.insert(addr - INPUT_TAINT_START);
     }
-    return cell<uint8_t>{memory[addr], taint.memory[addr]};
+    return cell<uint8_t>{memory[addr], taint.memory[addr] | src.taint};
   }
 
-  cell<uint16_t> read_halfword(uint32_t addr) {
-    return read_byte(addr) << 8 | read_byte(addr + 1);
+  cell<uint16_t> read_halfword(regcell addr) {
+    return read_byte(addr) << 8 | read_byte(addr + regcell(1));
   }
 
-  void write_halfword(uint32_t addr, cell<uint16_t> cell) {
-    write_byte(addr + 0, (cell & 0x0000ff00) >> 8);
-    write_byte(addr + 1, (cell & 0x000000ff) >> 0);
+  void write_halfword(regcell addr, cell<uint16_t> cell) {
+    write_byte(addr + regcell(0), (cell & 0x0000ff00) >> 8);
+    write_byte(addr + regcell(1), (cell & 0x000000ff) >> 0);
   }
   
-  regcell read_word(uint32_t addr) {
+  regcell read_word(regcell addr) {
     regcell result(0);
     result |= read_byte(addr);
     result <<= 8;
-    result |= read_byte(addr + 1);
+    result |= read_byte(addr + regcell(1));
     result <<= 8;
-    result |= read_byte(addr + 2);
+    result |= read_byte(addr + regcell(2));
     result <<= 8;
-    result |= read_byte(addr +3);
+    result |= read_byte(addr + regcell(3));
     return result;
   }
 
-  void write_word(uint32_t addr, regcell cell) {
-    write_byte(addr + 0, (cell & 0xff000000) >> 24);
-    write_byte(addr + 1, (cell & 0x00ff0000) >> 16);
-    write_byte(addr + 2, (cell & 0x0000ff00) >> 8);
-    write_byte(addr + 3, (cell & 0x000000ff) >> 0);
+  void write_word(regcell addr, regcell cell) {
+    write_byte(addr + regcell(0), (cell & 0xff000000) >> 24);
+    write_byte(addr + regcell(1), (cell & 0x00ff0000) >> 16);
+    write_byte(addr + regcell(2), (cell & 0x0000ff00) >> 8);
+    write_byte(addr + regcell(3), (cell & 0x000000ff) >> 0);
   }
 
   uint32_t fetch_instruction(uint32_t location) {

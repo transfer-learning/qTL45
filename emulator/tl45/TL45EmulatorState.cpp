@@ -146,7 +146,7 @@ void TL45EmulatorState::writeMemory(uint64_t addr, size_t n, void* data) {
 std::string TL45EmulatorState::getMemoryDisassembly(uint64_t &addr) {
   const std::unique_lock<std::mutex> lock(g_mutex);
   if (addr % 4 == 0) {
-    return TL45::disassemble(state.read_word((uint32_t) addr).value);
+    return TL45::disassemble(state.fetch_instruction((uint32_t) addr));
   }
   return "";
 }

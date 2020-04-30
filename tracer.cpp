@@ -1,4 +1,5 @@
 #include <vector>
+#include <unordered_set>
 #include <cstdio>
 #include <algorithm>
 
@@ -27,6 +28,9 @@ int main(int argc, char *argv[]) {
   std::sort(branches.begin(), branches.end(), [&profile](const auto& a, const auto& b) -> bool { 
     return profile.branch_count[a] < profile.branch_count[b]; // we want sort in descending order
   });
+
+  std::unordered_set<uint32_t> seen;
+  std::vector<uint32_t> interesting;
   printf("top branch report:\n");
   for (int i = 0; i < 200 && i < branches.size(); i++) {
     auto& taint_set = profile.branch_taint[branches[i]];
@@ -34,10 +38,19 @@ int main(int argc, char *argv[]) {
       continue;
     printf("%08x:%c | %08x hits, tainted by: ", branches[i].first, branches[i].second ? 't': 'f', profile.branch_count[branches[i]]);
     for (uint32_t x : taint_set) {
+      if (seen.find(x) == seen.end()) {
+        seen.insert(x);
+        interesting.push_back(x);
+      }
       printf("%u ", x);
     }
     printf("\n");
   }
+  printf("interest: ");
+  for (uint32_t i : interesting) {
+    printf("%d ", i);
+  }
+  printf("\n");
   return 0;
 }
 

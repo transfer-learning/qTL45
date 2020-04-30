@@ -229,13 +229,13 @@ void TL45::tick(tl45_state *state) {
       regcell decr_sp = state->read_reg(instr.DR);
       decr_sp.value -= 4;
       state->write_reg(instr.DR, decr_sp);
-      state->write_word(decr_sp.value, regcell(state->pc)); // we assume pc has no taint
+      state->write_word(decr_sp, regcell(state->pc)); // we assume pc has no taint
       state->pc = addr;
       break;
     }
     case 0xE: { // RET
       regcell incr_sp = state->read_reg(instr.DR);
-      state->pc = state->read_word(incr_sp.value).value;
+      state->pc = state->read_word(incr_sp).value;
       incr_sp.value += 4;
       state->write_reg(instr.DR, incr_sp);
       break;
@@ -249,7 +249,7 @@ void TL45::tick(tl45_state *state) {
     case 0x13: // SB
     case 0x14: // LW
     case 0x15: { // SW
-      uint32_t addr = state->read_reg(instr.SR1).value + (int32_t) (int16_t) instr.raw_imm;
+      regcell addr = state->read_reg(instr.SR1) + (cell<int32_t>) cell<int16_t>(instr.raw_imm);
       regcell value_to_write = state->read_reg(instr.DR);
       regcell value_read = regcell(0);
       bool is_read = false;
@@ -301,10 +301,6 @@ void TL45::tick(tl45_state *state) {
 
       if (is_read) {
         state->write_reg(instr.DR, value_read);
-      }
-
-      if (!is_read && addr == 0x696969) {
-        printf("%08x: %08x\n", state->pc - 4, value_to_write.value);
       }
 
       break;
