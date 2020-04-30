@@ -120,6 +120,8 @@ void TLEmulator::onMenuItemClick(bool checked) {
   machine_state->load(0, filename.toStdString());
   char* input = R"({"menu":{"id":"file","value":"File","popup":{"menuitem":[{"value":"New","onclick":"CreateNewDoc"},{"value":"Open","onclick":"OpenDoc","memes":129},{"value":"Close","onclick":"CloseDoc"}]}},"yeet":99})";
   machine_state->writeMemory(INPUT_TAINT_START, strlen(input), input);
+  uint32_t input_size = bswap_32((uint32_t) strlen(input));
+  machine_state->writeMemory(INPUT_LEN_ADDR, 4, &input_size);
 }
 
 void TLEmulator::gotoMemoryClick(bool checked) {

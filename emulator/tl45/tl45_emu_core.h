@@ -6,6 +6,13 @@
 #include <unordered_map>
 #include <deque>
 
+#ifdef _MSC_VER
+#include <stdlib.h>
+#define bswap_32(x) _byteswap_ulong(x)
+#else
+#include <byteswap.h>
+#endif
+
 #ifndef TL45_EMU_TL45_EMU_CORE_H
 #define TL45_EMU_TL45_EMU_CORE_H
 

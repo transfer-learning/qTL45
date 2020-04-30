@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     printf("failed to load input!\n");
     return 1;
   }
-  uint32_t input_size = (uint32_t) bytes_loaded;
+  uint32_t input_size = bswap_32((uint32_t) bytes_loaded);
   state.writeMemory(INPUT_LEN_ADDR, 4, &input_size);
   state.run();
 
