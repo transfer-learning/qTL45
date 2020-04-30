@@ -9,7 +9,7 @@
 
 int main(int argc, char *argv[]) {
   if (argc != 3) {
-    printf("usage: %s <program.bin> <input file>", argv[0]);
+    printf("usage: %s <program.bin> <input file>\n", argv[0]);
     return 1;
   }
   TL45EmulatorState state;

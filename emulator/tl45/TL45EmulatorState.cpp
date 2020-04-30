@@ -166,12 +166,14 @@ void TL45EmulatorState::run() {
 void TL45EmulatorState::clear() {
   const std::unique_lock<std::mutex> lock(g_mutex);
 #ifdef _WIN32
-  VirtualFree(this->state.memory, 0, MEM_RELEASE);
+  if (this->state.memory)
+    VirtualFree(this->state.memory, 0, MEM_RELEASE);
   state.memory = (uint8_t *) VirtualAlloc(nullptr, std::numeric_limits<uint32_t>::max(),
                                         MEM_RESERVE, PAGE_READWRITE);
   printf("mem at %p\n", state.memory);
 #else
-  munmap(this->state.memory, std::numeric_limits<uint32_t>::max());
+  if (this->state.memory)
+    munmap(this->state.memory, std::numeric_limits<uint32_t>::max());
   state.memory = (uint8_t *) mmap(nullptr, std::numeric_limits<uint32_t>::max(),
                                         PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_NORESERVE, 0, 0);
 #endif
