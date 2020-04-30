@@ -32,7 +32,7 @@ void TL45::tick(tl45_state *state) {
   DecodedInstruction instr{};
   if (!DecodedInstruction::decode(instruction, instr)) {
     // RIP
-    printf("%08x: Decode error\n", state->pc);
+    fprintf(stderr, "%08x: Decode error\n", state->pc);
     return;
   }
 
@@ -253,7 +253,7 @@ void TL45::tick(tl45_state *state) {
       regcell value_to_write = state->read_reg(instr.DR);
       regcell value_read = regcell(0);
       bool is_read = false;
-      //printf("access to %08x\n", addr);
+      //fprintf(stderr, "access to %08x\n", addr);
 
       switch (opcode) {
         case 0x10: // LHW
@@ -328,7 +328,7 @@ void TL45::tick(tl45_state *state) {
       break;
     }
     default:
-      printf("%08x: Decode error\n", state->pc);
+      fprintf(stderr, "%08x: Decode error\n", state->pc);
       state->pc -= 4;
       break; // DECODE ERROR
   }

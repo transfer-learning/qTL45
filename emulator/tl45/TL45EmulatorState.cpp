@@ -32,15 +32,15 @@ LONG WINAPI PageFaultExceptionFilter(EXCEPTION_POINTERS *ExceptionInfo) {
   }
 
   LPVOID FaultAddress = (LPVOID) ExceptionInfo->ExceptionRecord->ExceptionInformation[1];
-  // printf("fault at %p\n", FaultAddress);
+  // fprintf(stderr, "fault at %p\n", FaultAddress);
   LPVOID memory_start = g_pState->getRawMemoryPtr();
   LPVOID memory_end = (LPVOID)((uintptr_t)memory_start + std::numeric_limits<uint32_t>::max());
   if (FaultAddress >= memory_start && FaultAddress <= memory_end) {
     if (g_mutex.try_lock()) {
-      printf("faulting instruction: %p\n", (void*) ExceptionInfo->ContextRecord->Rip);
+      fprintf(stderr, "faulting instruction: %p\n", (void*) ExceptionInfo->ContextRecord->Rip);
       throw std::runtime_error("faulting code did not have the global state mutex locked");
     }
-    // printf("committing %p\n", FaultAddress);
+    // fprintf(stderr, "committing %p\n", FaultAddress);
     VirtualAlloc(FaultAddress, 1, MEM_COMMIT, PAGE_READWRITE);
     return EXCEPTION_CONTINUE_EXECUTION;
   }
@@ -52,7 +52,7 @@ LONG WINAPI PageFaultExceptionFilter(EXCEPTION_POINTERS *ExceptionInfo) {
 TL45EmulatorState::TL45EmulatorState() : state() {
   const std::unique_lock<std::mutex> lock(g_mutex);
   if (g_pState) {
-    printf("TL45EmulatorState singleton already initialized");
+    fprintf(stderr, "TL45EmulatorState singleton already initialized");
     abort();
   }
   g_pState = this;
@@ -170,7 +170,7 @@ void TL45EmulatorState::clear() {
     VirtualFree(this->state.memory, 0, MEM_RELEASE);
   state.memory = (uint8_t *) VirtualAlloc(nullptr, std::numeric_limits<uint32_t>::max(),
                                         MEM_RESERVE, PAGE_READWRITE);
-  printf("mem at %p\n", state.memory);
+  fprintf(stderr, "mem at %p\n", state.memory);
 #else
   if (this->state.memory)
     munmap(this->state.memory, std::numeric_limits<uint32_t>::max());
@@ -178,7 +178,7 @@ void TL45EmulatorState::clear() {
                                         PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_NORESERVE, 0, 0);
 #endif
   if (!state.memory) {
-    printf("Failed to allocate memory!\n");
+    fprintf(stderr , "Failed to allocate memory!\n");
     exit(1);
   }
   for (int i = 0; i < 15; ++i) {
@@ -217,7 +217,7 @@ int TL45EmulatorState::load(uint64_t addr, std::string fileName) {
 #endif
   size_t bytesLoaded = fread(&state.memory[addr], 1, fsize, f);
   fclose(f);
-  printf("%zul bytes loaded.\n", bytesLoaded);
+  fprintf(stderr, "%zul bytes loaded.\n", bytesLoaded);
   return bytesLoaded > 0 ? 0 : -1;
 }
 

@@ -31,26 +31,25 @@ int main(int argc, char *argv[]) {
 
   std::unordered_set<uint32_t> seen;
   std::vector<uint32_t> interesting;
-  printf("top branch report:\n");
+  fprintf(stderr, "top branch report:\n");
   for (int i = 0; i < 200 && i < branches.size(); i++) {
     auto& taint_set = profile.branch_taint[branches[i]];
     if (taint_set.size() == 0)
       continue;
-    printf("%08x:%c | %08x hits, tainted by: ", branches[i].first, branches[i].second ? 't': 'f', profile.branch_count[branches[i]]);
+    fprintf(stderr, "%08x:%c | %08x hits, tainted by: ", branches[i].first, branches[i].second ? 't': 'f', profile.branch_count[branches[i]]);
     for (uint32_t x : taint_set) {
       if (seen.find(x) == seen.end()) {
         seen.insert(x);
         interesting.push_back(x);
       }
-      printf("%u ", x);
+      fprintf(stderr, "%u ", x);
     }
-    printf("\n");
+    fprintf(stderr, "\n");
   }
-  printf("interest: ");
+  //printf("interest: ");
   for (uint32_t i : interesting) {
-    printf("%d ", i);
+    printf("%d\n", i);
   }
-  printf("\n");
   return 0;
 }
 
