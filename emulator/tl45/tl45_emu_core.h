@@ -4,6 +4,7 @@
 
 #include <unordered_set>
 #include <unordered_map>
+#include <deque>
 
 #ifndef TL45_EMU_TL45_EMU_CORE_H
 #define TL45_EMU_TL45_EMU_CORE_H
@@ -53,10 +54,23 @@ struct DecodedInstruction {
 };
 
 struct cell_taint {
-  std::unordered_set<uint32_t> set;
+#define TAINT_DEPTH 8
+  std::deque<uint32_t> set;
 
   void clear() {
     set.clear();
+  }
+
+  void add(uint32_t val) {
+    for (uint32_t existing : set) {
+      if (existing == val) {
+        return;
+      }
+    }
+    if (set.size() == TAINT_DEPTH) {
+      set.pop_back(); // full. evict oldest elem
+    }
+    set.push_front(val);
   }
 
   cell_taint() {
@@ -75,7 +89,9 @@ struct cell_taint {
   }
   
   cell_taint& operator|=(const cell_taint& other) {
-    set.insert(other.set.begin(), other.set.end());
+    for (uint32_t val : other.set) {
+      add(val);
+    }
     return *this;
   }
 
@@ -276,7 +292,7 @@ class tl45_state {
 public:
   struct {
     std::unordered_map<branch, int32_t, pair_hash> branch_count;
-    std::unordered_map<branch, std::unordered_set<int32_t>, pair_hash> branch_taint;
+    std::unordered_map<branch, cell_taint, pair_hash> branch_taint;
   } profile;
   
   uint32_t pc;
@@ -310,14 +326,14 @@ public:
     memory[addr] = cell.value;
     taint.memory[addr] = cell.taint | dst.taint;
     if (addr >= INPUT_TAINT_START && addr < INPUT_TAINT_END) {
-      taint.memory[addr].set.insert(addr - INPUT_TAINT_START);
+      taint.memory[addr].add(addr - INPUT_TAINT_START);
     }
   }
 
   cell<uint8_t> read_byte(regcell src) {
     uint32_t addr = src.value;
     if (addr >= INPUT_TAINT_START && addr < INPUT_TAINT_END) {
-      taint.memory[addr].set.insert(addr - INPUT_TAINT_START);
+      taint.memory[addr].add(addr - INPUT_TAINT_START);
     }
     return cell<uint8_t>{memory[addr], taint.memory[addr] | src.taint};
   }

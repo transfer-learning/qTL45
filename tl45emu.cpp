@@ -84,10 +84,10 @@ TLEmulator::TLEmulator(TL45EmulatorState *state, QWidget *parent)
       printf("top branch report:\n");
       for (int i = 0; i < 200 && i < branches.size(); i++) {
         auto& taint_set = profile.branch_taint[branches[i]];
-        if (taint_set.size() == 0)
+        if (taint_set.set.size() == 0)
           continue;
         printf("%08x:%c | %08x hits, tainted by: ", branches[i].first, branches[i].second ? 't': 'f', profile.branch_count[branches[i]]);
-        for (uint32_t x : taint_set) {
+        for (uint32_t x : taint_set.set) {
           printf("%u ", x);
         }
         printf("\n");

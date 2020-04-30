@@ -216,7 +216,7 @@ void TL45::tick(tl45_state *state) {
       // update profiling info
       uint32_t instr_addr = state->pc - 4;
       state->profile.branch_count[{instr_addr, do_jump}]++;
-      state->profile.branch_taint[{instr_addr, do_jump}].insert(flags_cell.taint.set.begin(), flags_cell.taint.set.end());
+      state->profile.branch_taint[{instr_addr, do_jump}] |= flags_cell.taint;
 
       if (do_jump) {
         uint32_t target_address = state->read_reg(instr.SR1).value + ((int32_t) (int16_t) instr.raw_imm); // SR1 + SEXT IMM
