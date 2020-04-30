@@ -2,6 +2,7 @@
 // Created by codetector on 12/3/19.
 //
 
+#include <cstring>
 #include <limits>
 #include <stdexcept>
 #include <mutex>
