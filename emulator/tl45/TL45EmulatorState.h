@@ -24,7 +24,7 @@ public:
   
   void clear() override;
 
-  int load(std::string fileName) override;
+  int load(uint64_t addr, std::string fileName) override;
 
 public:
   TL45::tl45_state state;

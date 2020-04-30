@@ -117,7 +117,7 @@ void TLEmulator::onMenuItemClick(bool checked) {
   QString filename = QFileDialog::getOpenFileName(this, tr("Open Binary File"), "",
           tr("All Files (*)"));
   machine_state->clear();
-  machine_state->load(filename.toStdString());
+  machine_state->load(0, filename.toStdString());
   char* input = R"({"menu":{"id":"file","value":"File","popup":{"menuitem":[{"value":"New","onclick":"CreateNewDoc"},{"value":"Open","onclick":"OpenDoc","memes":129},{"value":"Close","onclick":"CloseDoc"}]}},"yeet":99})";
   machine_state->writeMemory(INPUT_TAINT_START, strlen(input), input);
 }

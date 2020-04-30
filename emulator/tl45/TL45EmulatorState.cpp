@@ -199,7 +199,7 @@ void TL45EmulatorState::clear() {
   state.profile.branch_taint.clear();
 }
 
-int TL45EmulatorState::load(std::string fileName) {
+int TL45EmulatorState::load(uint64_t addr, std::string fileName) {
   const std::unique_lock<std::mutex> lock(g_mutex);
   FILE *f = fopen(fileName.c_str(), "rb");
   if (!f) {
@@ -210,9 +210,9 @@ int TL45EmulatorState::load(std::string fileName) {
   fseek(f, 0, SEEK_SET);
 #ifdef _WIN32
   // SCREW YOU WINDOWS!
-  VirtualAlloc(state.memory, fsize, MEM_COMMIT, PAGE_READWRITE);
+  VirtualAlloc(state.memory + addr, fsize, MEM_COMMIT, PAGE_READWRITE);
 #endif
-  size_t bytesLoaded = fread(state.memory, 1, fsize, f);
+  size_t bytesLoaded = fread(&state.memory[addr], 1, fsize, f);
   fclose(f);
   printf("%zul bytes loaded.\n", bytesLoaded);
   return bytesLoaded > 0 ? 0 : -1;

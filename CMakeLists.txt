@@ -32,4 +32,12 @@ add_executable(tl45_emu
         tl45emu.ui
         )
 
+add_executable(tl45_trace
+        tracer.cpp
+        emulator/tl45/tl45_emu_core.cpp
+        emulator/tl45/TL45EmulatorState.cpp
+        emulator/tl45/tl45_isa.cpp
+        )
+
 target_link_libraries(tl45_emu PRIVATE Qt5::Widgets fmt::fmt)
+target_link_libraries(tl45_trace PRIVATE fmt::fmt)

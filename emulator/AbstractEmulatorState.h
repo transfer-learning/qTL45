@@ -28,7 +28,7 @@ public:
   virtual void step() = 0;
   virtual void run() = 0;
   virtual void clear() = 0;
-  virtual int load(std::string) = 0;
+  virtual int load(uint64_t, std::string) = 0;
 
 
   virtual unsigned getMemoryAddrWidth() = 0;
