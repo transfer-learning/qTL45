@@ -24,6 +24,7 @@ int main(int argc, char *argv[]) {
   uint32_t input_size = bswap_32((uint32_t) bytes_loaded);
   state.writeMemory(INPUT_LEN_ADDR, 4, &input_size);
   state.run();
+  fprintf(stderr, "return: %x\n", state.state.read_reg(1).value);
 
   // display profiling info
   std::vector<TL45::branch> branches;

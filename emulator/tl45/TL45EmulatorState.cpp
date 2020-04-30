@@ -218,7 +218,7 @@ int TL45EmulatorState::load(uint64_t addr, std::string fileName) {
   size_t bytesLoaded = fread(&state.memory[addr], 1, fsize, f);
   fclose(f);
   fprintf(stderr, "%zul bytes loaded.\n", bytesLoaded);
-  return bytesLoaded > 0 ? 0 : -1;
+  return bytesLoaded;
 }
 
 void* TL45EmulatorState::getRawMemoryPtr() const {
