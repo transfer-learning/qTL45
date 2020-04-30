@@ -16,7 +16,13 @@ int main(int argc, char *argv[]) {
   TL45EmulatorState state;
 	state.clear(); // allocate virtual memory
   state.load(0, argv[1]);
-  state.load(INPUT_TAINT_START, argv[2]);
+  int bytes_loaded = state.load(INPUT_TAINT_START, argv[2]);
+  if (bytes_loaded < 0) {
+    printf("failed to load input!\n");
+    return 1;
+  }
+  uint32_t input_size = (uint32_t) bytes_loaded;
+  state.writeMemory(INPUT_LEN_ADDR, 4, &input_size);
   state.run();
 
   // display profiling info
